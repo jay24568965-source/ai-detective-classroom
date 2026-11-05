@@ -3,62 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>教师控制台 · AI侦探课堂</title>
+  <title data-i18n="teacher.docTitle">教师控制台 · AI侦探课堂</title>
   <link rel="stylesheet" href="/css/common.css" />
   <link rel="stylesheet" href="/css/game.css" />
 </head>
 <body>
+  <div class="lang-switch" id="langSwitch" role="group" aria-label="语言">
+    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <span class="lang-sep" aria-hidden="true">|</span>
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+  </div>
   <div id="setup" class="card" style="margin-top:2rem;">
-    <h1>教师控制台</h1>
-    <p class="muted">创建新课堂或恢复已有课堂（本机 localStorage）。</p>
-    <label>显示名称</label>
+    <h1 data-i18n="teacher.heading">教师控制台</h1>
+    <p class="muted" data-i18n="teacher.lead">创建新课堂或恢复已有课堂（本机 localStorage）。</p>
+    <label data-i18n="teacher.name">显示名称</label>
     <input id="teacherName" value="教师" />
-    <label>选择案件</label>
+    <label data-i18n="teacher.case">选择案件</label>
     <select id="caseSelect"></select>
     <div class="row" style="margin-top:1rem;">
-      <button id="btnCreate">创建课堂</button>
-      <button class="secondary" id="btnRestore">恢复上次</button>
-      <a class="btn secondary" href="/">返回首页</a>
+      <button id="btnCreate" data-i18n="teacher.create">创建课堂</button>
+      <button class="secondary" id="btnRestore" data-i18n="teacher.restore">恢复上次</button>
+      <a class="btn secondary" href="/" data-i18n="teacher.home">返回首页</a>
     </div>
     <div id="setupMsg" class="flash" style="display:none;"></div>
   </div>
 
   <div id="console" class="teacher-layout" style="display:none;">
     <aside class="teacher-nav">
-      <h2 style="margin-top:0;">课堂 <span id="roomCode" class="badge"></span></h2>
+      <h2 style="margin-top:0;"><span data-i18n="teacher.room">课堂</span> <span id="roomCode" class="badge"></span></h2>
       <p class="muted" id="caseTitle"></p>
-      <p>投票：<span id="voteBadge" class="badge">未开启</span></p>
-      <p>揭晓：<span id="revealBadge" class="badge">未揭晓</span></p>
+      <p><span data-i18n="teacher.voteLabel">投票：</span><span id="voteBadge" class="badge">未开启</span></p>
+      <p><span data-i18n="teacher.revealLabel">揭晓：</span><span id="revealBadge" class="badge">未揭晓</span></p>
       <hr style="border-color:var(--border);" />
-      <label>调查阶段</label>
+      <label data-i18n="teacher.stage">调查阶段</label>
       <div class="row">
-        <button data-stage="1">第一幕</button>
-        <button data-stage="2">第二幕</button>
-        <button data-stage="3">第三幕</button>
+        <button data-stage="1" data-i18n="teacher.act1">第一幕</button>
+        <button data-stage="2" data-i18n="teacher.act2">第二幕</button>
+        <button data-stage="3" data-i18n="teacher.act3">第三幕</button>
       </div>
-      <label style="margin-top:1rem;">发布提示</label>
-      <textarea id="hintText" rows="3" placeholder="教学提示（不关联投票结果）"></textarea>
-      <button id="btnHint" style="margin-top:0.5rem;width:100%;">发送提示</button>
+      <label style="margin-top:1rem;" data-i18n="teacher.hintLabel">发布提示</label>
+      <textarea id="hintText" rows="3" data-i18n-placeholder="teacher.hintPh" placeholder="教学提示（不关联投票结果）"></textarea>
+      <button id="btnHint" data-i18n="teacher.sendHint" style="margin-top:0.5rem;width:100%;">发送提示</button>
       <hr style="border-color:var(--border);" />
-      <button id="btnOpenVote" class="ok" style="width:100%;margin-bottom:0.4rem;">开启最终投票</button>
-      <button id="btnCloseVote" class="secondary" style="width:100%;margin-bottom:0.4rem;">关闭投票</button>
-      <button id="btnReveal" class="danger" style="width:100%;margin-bottom:0.4rem;">统一揭晓</button>
-      <button id="btnPause" class="secondary" style="width:100%;margin-bottom:0.4rem;">暂停/继续调查</button>
+      <button id="btnOpenVote" class="ok" data-i18n="teacher.openVote" style="width:100%;margin-bottom:0.4rem;">开启最终投票</button>
+      <button id="btnCloseVote" class="secondary" data-i18n="teacher.closeVote" style="width:100%;margin-bottom:0.4rem;">关闭投票</button>
+      <button id="btnReveal" class="danger" data-i18n="teacher.reveal" style="width:100%;margin-bottom:0.4rem;">统一揭晓</button>
+      <button id="btnPause" class="secondary" data-i18n="teacher.pause" style="width:100%;margin-bottom:0.4rem;">暂停/继续调查</button>
       <hr style="border-color:var(--border);" />
-      <button id="btnExportJson" style="width:100%;margin-bottom:0.4rem;">导出 JSON 日志</button>
-      <button id="btnExportCsv" class="secondary" style="width:100%;">导出 CSV</button>
-      <p class="muted" style="font-size:0.75rem;margin-top:1rem;">教师令牌已保存在本机。刷新可恢复。</p>
+      <button id="btnExportJson" data-i18n="teacher.exportJson" style="width:100%;margin-bottom:0.4rem;">导出 JSON 日志</button>
+      <button id="btnExportCsv" class="secondary" data-i18n="teacher.exportCsv" style="width:100%;">导出 CSV</button>
+      <p class="muted" data-i18n="teacher.tokenNote" style="font-size:0.75rem;margin-top:1rem;">教师令牌已保存在本机。刷新可恢复。</p>
     </aside>
     <main class="teacher-main">
-      <h2>小组状态</h2>
+      <h2 data-i18n="teacher.groups">小组状态</h2>
       <div id="groupsTable"></div>
-      <h2>最近提示</h2>
+      <h2 data-i18n="teacher.hints">最近提示</h2>
       <ul id="hintsList" class="muted"></ul>
       <div id="revealBox" style="display:none;" class="flash success"></div>
       <div id="msg" class="flash" style="display:none;"></div>
     </main>
   </div>
 
+  <script src="/js/case-locale.js"></script>
+  <script src="/js/i18n.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/teacher.js"></script>
 </body>

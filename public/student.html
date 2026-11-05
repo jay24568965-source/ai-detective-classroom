@@ -3,23 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>学生端 · AI侦探课堂</title>
+  <title data-i18n="student.docTitle">学生端 · AI侦探课堂</title>
   <link rel="stylesheet" href="/css/common.css" />
   <link rel="stylesheet" href="/css/game.css" />
 </head>
 <body>
+  <div class="lang-switch" id="langSwitch" role="group" aria-label="语言">
+    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <span class="lang-sep" aria-hidden="true">|</span>
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+  </div>
   <div id="join" class="card" style="margin-top:2rem;">
-    <h1>加入课堂</h1>
-    <label>课堂码</label>
-    <input id="code" placeholder="例如 A1B2C3" autocomplete="off" />
-    <label>小组 ID（不可猜测占用；首次自定，如 G1）</label>
+    <h1 data-i18n="student.heading">加入课堂</h1>
+    <label data-i18n="student.code">课堂码</label>
+    <input id="code" data-i18n-placeholder="student.codePh" placeholder="例如 A1B2C3" autocomplete="off" />
+    <label data-i18n="student.groupId">小组 ID（不可猜测占用；首次自定，如 G1）</label>
     <input id="groupId" placeholder="G1" />
-    <label>小组显示名</label>
-    <input id="groupLabel" placeholder="第一组" />
+    <label data-i18n="student.groupLabel">小组显示名</label>
+    <input id="groupLabel" data-i18n-placeholder="student.groupPh" placeholder="第一组" />
     <div class="row" style="margin-top:1rem;">
-      <button id="btnJoin">加入</button>
-      <button class="secondary" id="btnRejoin">用本机令牌重连</button>
-      <a class="btn secondary" href="/">首页</a>
+      <button id="btnJoin" data-i18n="student.join">加入</button>
+      <button class="secondary" id="btnRejoin" data-i18n="student.rejoin">用本机令牌重连</button>
+      <a class="btn secondary" href="/" data-i18n="student.home">首页</a>
     </div>
     <div id="joinMsg" class="flash" style="display:none;"></div>
   </div>
@@ -29,11 +34,11 @@
       <strong id="caseName"></strong>
       <span class="badge" id="roomBadge"></span>
       <span class="badge" id="groupBadge"></span>
-      <span class="badge mock" id="aiBadge">演示问答（Mock）</span>
+      <span class="badge mock" id="aiBadge" data-i18n="badge.mock">演示问答（Mock）</span>
       <span class="task muted" id="taskBar">目标：探索场景、收集证据、问询人物</span>
-      <button class="secondary" id="btnEvidence">证据板</button>
-      <button class="secondary" id="btnNotes">笔记</button>
-      <button class="secondary" id="btnCalc">科学分析</button>
+      <button class="secondary" id="btnEvidence" data-i18n="student.evidenceBtn">证据板</button>
+      <button class="secondary" id="btnNotes" data-i18n="student.notesBtn">笔记</button>
+      <button class="secondary" id="btnCalc" data-i18n="student.calcBtn">科学分析</button>
     </div>
     <div class="stage-wrap">
       <canvas id="gameCanvas" width="800" height="540"></canvas>
@@ -47,117 +52,119 @@
       </div>
     </div>
     <aside class="side">
-      <h3>证据板 <span id="evCount" class="badge">0</span></h3>
+      <h3><span data-i18n="student.evidenceTitle">证据板</span> <span id="evCount" class="badge">0</span></h3>
       <div class="list" id="evList"></div>
-      <h3>已问询</h3>
+      <h3 data-i18n="student.interviewed">已问询</h3>
       <div class="list" id="ivList"></div>
-      <h3>教师提示</h3>
+      <h3 data-i18n="student.hints">教师提示</h3>
       <div class="list" id="hintList"></div>
-      <p class="muted" style="font-size:0.75rem;margin-top:1rem;">WASD / 方向键移动 · E 互动 · 打开面板时停止移动</p>
+      <p class="muted" data-i18n="student.help" style="font-size:0.75rem;margin-top:1rem;">WASD / 方向键移动 · E 互动 · 打开面板时停止移动</p>
     </aside>
   </div>
 
   <!-- Modals -->
   <div class="overlay" id="modalBrief">
     <div class="modal">
-      <h2>案件简报</h2>
+      <h2 data-i18n="brief.title">案件简报</h2>
       <p id="briefBg"></p>
       <ul id="briefList"></ul>
-      <button id="btnBriefOk">开始调查</button>
+      <button id="btnBriefOk" data-i18n="brief.start">开始调查</button>
     </div>
   </div>
 
   <div class="overlay" id="modalDialog">
     <div class="modal">
-      <h2 id="dialogTitle">交谈</h2>
-      <span class="badge mock">演示问答（Mock）</span>
+      <h2 id="dialogTitle" data-i18n="dialog.title">交谈</h2>
+      <span class="badge mock" data-i18n="badge.mock">演示问答（Mock）</span>
       <div class="chat-log" id="chatLog"></div>
       <div class="preset-btns" id="presetBtns"></div>
-      <label>或输入问题（将匹配预设）</label>
+      <label data-i18n="dialog.orType">或输入问题（将匹配预设）</label>
       <input id="customQ" />
       <div class="row" style="margin-top:0.75rem;">
-        <button id="btnAsk">提问</button>
-        <button class="secondary" id="btnCloseDialog">关闭</button>
+        <button id="btnAsk" data-i18n="dialog.ask">提问</button>
+        <button class="secondary" id="btnCloseDialog" data-i18n="dialog.close">关闭</button>
       </div>
     </div>
   </div>
 
   <div class="overlay" id="modalItem">
     <div class="modal">
-      <h2 id="itemTitle">调查</h2>
+      <h2 id="itemTitle" data-i18n="item.title">调查</h2>
       <div id="itemBody"></div>
-      <button id="btnCloseItem" style="margin-top:0.75rem;">关闭</button>
+      <button id="btnCloseItem" data-i18n="item.close" style="margin-top:0.75rem;">关闭</button>
     </div>
   </div>
 
   <div class="overlay" id="modalEvidence">
     <div class="modal wide">
-      <h2>证据板</h2>
+      <h2 data-i18n="evidence.title">证据板</h2>
       <div id="evidenceDetail"></div>
-      <button class="secondary" id="btnCloseEv">关闭</button>
+      <button class="secondary" id="btnCloseEv" data-i18n="evidence.close">关闭</button>
     </div>
   </div>
 
   <div class="overlay" id="modalNotes">
     <div class="modal">
-      <h2>推理笔记</h2>
-      <textarea id="notesArea" rows="10" placeholder="记录证据链与讨论要点…"></textarea>
+      <h2 data-i18n="notes.title">推理笔记</h2>
+      <textarea id="notesArea" rows="10" data-i18n-placeholder="notes.ph" placeholder="记录证据链与讨论要点…"></textarea>
       <div class="row" style="margin-top:0.75rem;">
-        <button id="btnSaveNotes">保存</button>
-        <button class="secondary" id="btnCloseNotes">关闭</button>
+        <button id="btnSaveNotes" data-i18n="notes.save">保存</button>
+        <button class="secondary" id="btnCloseNotes" data-i18n="notes.close">关闭</button>
       </div>
     </div>
   </div>
 
   <div class="overlay" id="modalCalc">
     <div class="modal wide">
-      <h2>科学分析 / 计算草稿</h2>
+      <h2 data-i18n="calc.title">科学分析 / 计算草稿</h2>
       <div id="calcBody"></div>
       <div class="row" style="margin-top:0.75rem;">
-        <button id="btnSaveCalc">保存草稿</button>
-        <button class="secondary" id="btnCloseCalc">关闭</button>
+        <button id="btnSaveCalc" data-i18n="calc.save">保存草稿</button>
+        <button class="secondary" id="btnCloseCalc" data-i18n="calc.close">关闭</button>
       </div>
     </div>
   </div>
 
   <div class="overlay" id="modalVote">
     <div class="modal">
-      <h2>最终投票（仅一次）</h2>
+      <h2 data-i18n="vote.title">最终投票（仅一次）</h2>
       <p id="voteQuestion" class="muted"></p>
-      <label>选择人物</label>
+      <label data-i18n="vote.who">选择人物</label>
       <select id="voteSuspect"></select>
-      <label>引用的证据编号</label>
-      <input id="voteEvidence" placeholder="例如 E01,E04,E08 或计算结论" />
-      <label>科学分析依据</label>
-      <textarea id="voteRationale" rows="5" placeholder="说明为何该陈述/行为与证据矛盾或构成直接致因…"></textarea>
+      <label data-i18n="vote.evidence">引用的证据编号</label>
+      <input id="voteEvidence" data-i18n-placeholder="vote.evidencePh" placeholder="例如 E01,E04,E08 或计算结论" />
+      <label data-i18n="vote.why">科学分析依据</label>
+      <textarea id="voteRationale" rows="5" data-i18n-placeholder="vote.whyPh" placeholder="说明为何该陈述/行为与证据矛盾或构成直接致因…"></textarea>
       <div class="row" style="margin-top:0.75rem;">
-        <button id="btnSubmitVote" class="ok">确认提交（不可改）</button>
-        <button class="secondary" id="btnCloseVoteModal">取消</button>
+        <button id="btnSubmitVote" class="ok" data-i18n="vote.submit">确认提交（不可改）</button>
+        <button class="secondary" id="btnCloseVoteModal" data-i18n="vote.cancel">取消</button>
       </div>
-      <p class="muted" style="font-size:0.8rem;">提交前请小组检查。确认后锁定，不得改选。</p>
+      <p class="muted" data-i18n="vote.note" style="font-size:0.8rem;">提交前请小组检查。确认后锁定，不得改选。</p>
     </div>
   </div>
 
   <div class="overlay" id="modalResult">
     <div class="modal">
-      <h2>揭晓结果</h2>
+      <h2 data-i18n="result.title">揭晓结果</h2>
       <p id="resultStatus" style="font-size:1.25rem;"></p>
       <div id="resultSummary"></div>
-      <button id="btnCloseResult">关闭</button>
+      <button id="btnCloseResult" data-i18n="result.close">关闭</button>
     </div>
   </div>
 
   <div class="overlay" id="modalHost">
     <div class="modal">
-      <h2>调查主持人</h2>
+      <h2 data-i18n="host.title">调查主持人</h2>
       <p id="hostText"></p>
       <div class="row">
         <button id="btnHostVote" style="display:none;">进入最终投票</button>
-        <button class="secondary" id="btnCloseHost">关闭</button>
+        <button class="secondary" id="btnCloseHost" data-i18n="host.close">关闭</button>
       </div>
     </div>
   </div>
 
+  <script src="/js/case-locale.js"></script>
+  <script src="/js/i18n.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/ai-adapter.js"></script>
   <script src="/js/game-engine.js"></script>

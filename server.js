@@ -7,6 +7,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { randomBytes } = require('crypto');
+const { apply: applyCaseLocale } = require('./public/js/case-locale');
 
 const app = express();
 const PORT = process.env.PORT || 3080;
@@ -25,8 +26,40 @@ function loadCaseRaw(caseId) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
+/** zh by default. Only an explicit ?lang= or x-lang header selects English. */
+function requestedLang(req) {
+  const q = String((req && req.query && req.query.lang) || '').toLowerCase();
+  const h = String((req && req.get && req.get('x-lang')) || '').toLowerCase();
+  if (q === 'en' || h === 'en') return 'en';
+  return 'zh';
+}
+
+/** Student-safe English overlay. Reveal text is attached only after the teacher reveals. */
+function studentEnOverlay(raw) {
+  const en = raw && raw.i18n && raw.i18n.en;
+  if (!en) return null;
+  const copy = JSON.parse(JSON.stringify(en));
+  delete copy.revealSummary;
+  // Answers stay on the interview route. The public case only needs names and narrative.
+  if (copy.suspects) {
+    Object.keys(copy.suspects).forEach((id) => {
+      if (copy.suspects[id]) delete copy.suspects[id].mockQA;
+    });
+  }
+  return copy;
+}
+
+function revealPair(raw, lang) {
+  const zh = raw.revealSummary || null;
+  const en = (raw.i18n && raw.i18n.en && raw.i18n.en.revealSummary) || null;
+  if (lang === 'en' && en) {
+    return { revealSummary: en, revealSummaryZh: zh, revealSummaryEn: en };
+  }
+  return { revealSummary: zh, revealSummaryEn: en };
+}
+
 /** Strip teacher-only / answer fields for student clients */
-function publicCaseView(raw, stage) {
+function publicCaseView(raw, stage, lang) {
   const stageNum = stage || 1;
   const unlocked = new Set();
   (raw.stages || []).forEach((s) => {
@@ -44,7 +77,7 @@ function publicCaseView(raw, stage) {
       calcFields: e.calcFields || null,
     }));
 
-  return {
+  const view = {
     id: raw.id,
     title: raw.title,
     subject: raw.subject,
@@ -71,6 +104,18 @@ function publicCaseView(raw, stage) {
     stages: (raw.stages || []).map((s) => ({ id: s.id, name: s.name })),
     evidenceCatalogIds: (raw.evidence || []).map((e) => e.id),
   };
+
+  const en = studentEnOverlay(raw);
+  const zhSnap = JSON.parse(JSON.stringify(view));
+  if (lang !== 'en' || !en) {
+    zhSnap.locale = 'zh';
+    zhSnap.i18n = { en };
+    return zhSnap;
+  }
+  const localized = applyCaseLocale(zhSnap, en);
+  localized.locale = 'en';
+  localized.i18n = { en, zh: zhSnap };
+  return localized;
 }
 
 function code6() {
@@ -94,6 +139,7 @@ function publicRoomState(room) {
     code: room.code,
     caseId: room.caseId,
     caseTitle: room.caseTitle,
+    caseTitleEn: room.caseTitleEn || null,
     stage: room.stage,
     votingOpen: room.votingOpen,
     revealed: room.revealed,
@@ -129,12 +175,31 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, rooms: rooms.size, time: nowIso() });
 });
 
-app.get('/api/cases', (_req, res) => {
+app.get('/api/cases', (req, res) => {
+  const lang = requestedLang(req);
   const list = ['physics', 'chemistry']
     .map((id) => {
       const raw = loadCaseRaw(id);
       if (!raw) return null;
-      return { id: raw.id, title: raw.title, subject: raw.subject, durationHint: raw.durationHint };
+      const en = raw.i18n && raw.i18n.en;
+      const zh = { title: raw.title, subject: raw.subject, durationHint: raw.durationHint };
+      const item = {
+        id: raw.id,
+        title: raw.title,
+        subject: raw.subject,
+        durationHint: raw.durationHint,
+        i18n: {
+          en: en ? { title: en.title, subject: en.subject, durationHint: en.durationHint } : null,
+        },
+      };
+      if (lang === 'en' && en) {
+        item.title = en.title;
+        item.subject = en.subject;
+        item.durationHint = en.durationHint;
+        item.locale = 'en';
+        item.i18n.zh = zh;
+      }
+      return item;
     })
     .filter(Boolean);
   res.json({ cases: list });
@@ -156,6 +221,7 @@ app.post('/api/teacher/create', (req, res) => {
     teacherName: teacherName || '教师',
     caseId: raw.id,
     caseTitle: raw.title,
+    caseTitleEn: (raw.i18n && raw.i18n.en && raw.i18n.en.title) || null,
     stage: 1,
     votingOpen: false,
     revealed: false,
@@ -171,6 +237,7 @@ app.post('/api/teacher/create', (req, res) => {
     teacherToken,
     caseId: raw.id,
     caseTitle: raw.title,
+    caseTitleEn: room.caseTitleEn,
     state: publicRoomState(room),
   });
 });
@@ -193,9 +260,12 @@ app.get('/api/teacher/:code/state', (req, res) => {
   const room = requireTeacher(req, res);
   if (!room) return;
   const raw = loadCaseRaw(room.caseId);
+  const revealedPack = room.revealed ? revealPair(raw, requestedLang(req)) : null;
   res.json({
     state: publicRoomState(room),
-    revealSummary: room.revealed ? raw.revealSummary : null,
+    revealSummary: revealedPack ? revealedPack.revealSummary : null,
+    revealSummaryEn: revealedPack ? revealedPack.revealSummaryEn : null,
+    revealSummaryZh: revealedPack ? revealedPack.revealSummaryZh || null : null,
     correctSuspectId: room.revealed ? room.correctSuspectId : null,
     groupsDetail: Object.values(room.groups).map((g) => ({
       id: g.id,
@@ -270,10 +340,13 @@ app.post('/api/teacher/:code/reveal', (req, res) => {
     }
     g.logs.push({ at: nowIso(), type: 'reveal', result: g.result });
   });
+  const pack = revealPair(raw, requestedLang(req));
   res.json({
     state: publicRoomState(room),
     correctSuspectId: room.correctSuspectId,
-    revealSummary: raw.revealSummary,
+    revealSummary: pack.revealSummary,
+    revealSummaryEn: pack.revealSummaryEn,
+    revealSummaryZh: pack.revealSummaryZh || null,
   });
 });
 
@@ -347,7 +420,7 @@ app.post('/api/student/join', (req, res) => {
         groupId: existing.id,
         groupToken: existing.token,
         label: existing.label,
-        case: publicCaseView(raw, room.stage),
+        case: publicCaseView(raw, room.stage, requestedLang(req)),
         progress: sanitizeProgress(existing, room),
         state: publicRoomState(room),
       });
@@ -381,7 +454,7 @@ app.post('/api/student/join', (req, res) => {
     groupId,
     groupToken: token,
     label,
-    case: publicCaseView(raw, room.stage),
+    case: publicCaseView(raw, room.stage, requestedLang(req)),
     progress: sanitizeProgress(g, room),
     state: publicRoomState(room),
   });
@@ -426,11 +499,15 @@ app.get('/api/student/:code/state', (req, res) => {
   if (!ctx) return;
   const { room, g } = ctx;
   const raw = loadCaseRaw(room.caseId);
+  const lang = requestedLang(req);
+  const revealedPack = room.revealed ? revealPair(raw, lang) : null;
   res.json({
-    case: publicCaseView(raw, room.stage),
+    case: publicCaseView(raw, room.stage, lang),
     progress: sanitizeProgress(g, room),
     state: publicRoomState(room),
-    revealSummary: room.revealed ? raw.revealSummary : null,
+    revealSummary: revealedPack ? revealedPack.revealSummary : null,
+    revealSummaryEn: revealedPack ? revealedPack.revealSummaryEn : null,
+    revealSummaryZh: revealedPack ? revealedPack.revealSummaryZh || null : null,
   });
 });
 
@@ -483,11 +560,31 @@ app.post('/api/student/:code/investigate', (req, res) => {
     }
   }
 
+  const lang = requestedLang(req);
+  const en = lang === 'en' ? studentEnOverlay(raw) : null;
+  let itemName = foundItem.name;
+  let gainedOut = gained;
+  if (en) {
+    const mapHit = (raw.maps || []).find((m) => (m.items || []).some((i) => i.id === itemId));
+    const translated = mapHit && en.maps && en.maps[mapHit.id] && en.maps[mapHit.id].items && en.maps[mapHit.id].items[itemId];
+    if (translated) itemName = translated;
+    gainedOut = gained.map((card) => {
+      const t = en.evidence && en.evidence[card.id];
+      if (!t) return card;
+      return Object.assign({}, card, {
+        name: t.name || card.name,
+        source: t.source || card.source,
+        studentText: t.studentText || card.studentText,
+      });
+    });
+  }
+
   res.json({
     viewed: true,
-    itemName: foundItem.name,
+    itemName,
+    itemNameZh: foundItem.name,
     action: foundItem.action || null,
-    gained,
+    gained: gainedOut,
     progress: sanitizeProgress(g, room),
   });
 });
@@ -519,6 +616,55 @@ app.post('/api/student/:code/ready', (req, res) => {
   res.json({ progress: sanitizeProgress(g, room), state: publicRoomState(room) });
 });
 
+function enMockQA(raw, suspectId) {
+  const bag = raw.i18n && raw.i18n.en && raw.i18n.en.suspects && raw.i18n.en.suspects[suspectId];
+  return (bag && bag.mockQA) || [];
+}
+
+/** Chinese match keeps the original rules. English is used only when Chinese does not hit. */
+function matchMockQA(qa, enList, question) {
+  const list = qa || [];
+  const en = enList || [];
+  if (!list.length) return -1;
+  if (question) {
+    const exact = list.findIndex((pair) => pair.q === question);
+    if (exact >= 0) return exact;
+    const pref = list.findIndex((pair) => pair.q && question.includes(pair.q.slice(0, 6)));
+    if (pref >= 0) return pref;
+    const tokens = question.split(/\s+/).filter(Boolean);
+    const scored = list
+      .map((pair, i) => {
+        const score = tokens.reduce((n, t) => n + (pair.q.includes(t) || pair.a.includes(t) ? 1 : 0), 0);
+        return { i, score };
+      })
+      .sort((a, b) => b.score - a.score);
+    if (scored[0] && scored[0].score > 0) return scored[0].i;
+    const enExact = en.findIndex((pair) => pair && pair.q === question);
+    if (enExact >= 0) return enExact;
+    const enTokens = question.toLowerCase().split(/[^a-z0-9]+/).filter((t) => t.length > 2);
+    let best = -1;
+    let bestScore = 0;
+    en.forEach((pair, i) => {
+      if (!pair || !pair.q) return;
+      const hay = `${pair.q} ${pair.a || ''}`.toLowerCase();
+      const score = enTokens.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
+      if (score > bestScore) {
+        bestScore = score;
+        best = i;
+      }
+    });
+    if (best >= 0) return best;
+  }
+  return 0;
+}
+
+function interviewPayload(raw, suspect, lang) {
+  const qa = suspect.mockQA || [];
+  const enList = enMockQA(raw, suspect.id);
+  const enName = raw.i18n && raw.i18n.en && raw.i18n.en.suspects && raw.i18n.en.suspects[suspect.id];
+  return { qa, enList, enName: enName || {}, lang };
+}
+
 /** Mock interview — preset Q&A only; structured for future Convai adapter */
 app.post('/api/student/:code/interview', (req, res) => {
   const ctx = requireGroup(req, res);
@@ -532,48 +678,41 @@ app.post('/api/student/:code/interview', (req, res) => {
 
   if (!g.interviewed.includes(suspectId)) g.interviewed.push(suspectId);
 
-  const mode = 'mock';
-  let answer = null;
-  let matchedQ = null;
-  const qa = suspect.mockQA || [];
-  if (question) {
-    const hit = qa.find((pair) => pair.q === question || question.includes(pair.q.slice(0, 6)));
-    if (hit) {
-      answer = hit.a;
-      matchedQ = hit.q;
-    } else {
-      // fuzzy: pick by keyword overlap
-      const scored = qa
-        .map((pair) => {
-          const tokens = question.split(/\s+/).filter(Boolean);
-          const score = tokens.reduce((n, t) => n + (pair.q.includes(t) || pair.a.includes(t) ? 1 : 0), 0);
-          return { pair, score };
-        })
-        .sort((a, b) => b.score - a.score);
-      if (scored[0] && scored[0].score > 0) {
-        answer = scored[0].pair.a;
-        matchedQ = scored[0].pair.q;
-      }
-    }
-  }
-  if (!answer) {
-    answer = qa[0] ? qa[0].a : '……（对方没有更多可说的了）';
-    matchedQ = qa[0] ? qa[0].q : null;
-  }
+  const lang = requestedLang(req);
+  const { qa, enList, enName } = interviewPayload(raw, suspect, lang);
+  const idx = matchMockQA(qa, enList, question);
+  const pair = idx >= 0 && qa[idx] ? qa[idx] : null;
+  const enPair = idx >= 0 && enList[idx] ? enList[idx] : null;
+  const answerZh = pair ? pair.a : '……（对方没有更多可说的了）';
+  const questionZh = pair ? pair.q : question;
+  const answerEn = enPair && enPair.a ? enPair.a : null;
+  const questionEn = enPair && enPair.q ? enPair.q : null;
 
-  // Safety: never leak correct answer phrasing from reveal
-  const leakBan = [raw.correctSuspectId, '72 km/h', '标准答案'];
-  // answers are author-controlled presets; still strip accidental teacher notes
-
-  g.logs.push({ at: nowIso(), type: 'interview', suspectId, question: matchedQ || question });
+  // Preset answers are author-controlled and must not include the reveal headline.
+  g.logs.push({ at: nowIso(), type: 'interview', suspectId, question: questionZh || question });
+  const useEn = lang === 'en';
   res.json({
-    mode,
-    label: '演示问答（Mock）',
+    mode: 'mock',
+    label: useEn ? 'Demo Q&A (Mock)' : '演示问答（Mock）',
+    labelEn: 'Demo Q&A (Mock)',
     suspectId,
-    suspectName: suspect.name,
-    presets: qa.map((p) => p.q),
-    question: matchedQ || question,
-    answer,
+    suspectName: useEn && enName.name ? enName.name : suspect.name,
+    suspectNameZh: suspect.name,
+    presets: useEn && enList.length ? enList.map((p) => p.q) : qa.map((p) => p.q),
+    presetsZh: qa.map((p) => p.q),
+    presetsEn: enList.map((p) => p && p.q).filter(Boolean),
+    qa: qa.map((p, i) => ({
+      q: p.q,
+      a: p.a,
+      qEn: enList[i] && enList[i].q,
+      aEn: enList[i] && enList[i].a,
+    })),
+    question: useEn && questionEn ? questionEn : questionZh,
+    questionZh,
+    questionEn,
+    answer: useEn && answerEn ? answerEn : answerZh,
+    answerZh,
+    answerEn,
     adapter: { provider: 'mock', convaiReady: false },
     progress: sanitizeProgress(g, room),
   });
@@ -586,10 +725,22 @@ app.get('/api/student/:code/interview/:suspectId/presets', (req, res) => {
   const raw = loadCaseRaw(room.caseId);
   const suspect = (raw.suspects || []).find((s) => s.id === req.params.suspectId);
   if (!suspect) return res.status(404).json({ error: '人物不存在' });
+  const lang = requestedLang(req);
+  const { qa, enList } = interviewPayload(raw, suspect, lang);
+  const useEn = lang === 'en' && enList.length;
   res.json({
     mode: 'mock',
-    label: '演示问答（Mock）',
-    presets: (suspect.mockQA || []).map((p) => p.q),
+    label: useEn ? 'Demo Q&A (Mock)' : '演示问答（Mock）',
+    labelEn: 'Demo Q&A (Mock)',
+    presets: useEn ? enList.map((p) => p.q) : qa.map((p) => p.q),
+    presetsZh: qa.map((p) => p.q),
+    presetsEn: enList.map((p) => p && p.q).filter(Boolean),
+    qa: qa.map((p, i) => ({
+      q: p.q,
+      a: p.a,
+      qEn: enList[i] && enList[i].q,
+      aEn: enList[i] && enList[i].a,
+    })),
     adapter: { provider: 'mock', convaiReady: false },
   });
 });

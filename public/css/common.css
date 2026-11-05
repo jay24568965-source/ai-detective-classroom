@@ -59,6 +59,32 @@ label { display: block; margin: 0.5rem 0 0.25rem; color: var(--muted); font-size
 .badge.ok { background: #14532d; color: #bbf7d0; }
 .badge.bad { background: #7f1d1d; color: #fecaca; }
 .badge.wait { background: #1e3a8a; color: #bfdbfe; }
+.lang-switch {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.12rem 0.3rem;
+}
+.lang-switch button {
+  background: transparent;
+  color: var(--muted);
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.lang-switch button.active {
+  background: var(--accent);
+  color: #0f172a;
+}
+.lang-switch .lang-sep { color: var(--muted); font-size: 0.8rem; user-select: none; }
 .hero {
   text-align: center;
   padding: 3rem 1rem 1rem;
