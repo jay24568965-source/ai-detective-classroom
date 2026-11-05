@@ -10,7 +10,7 @@
     "投票问题关注“直接导致暴露事故”的行为，不表述为故意杀人或法律责任判决。",
     "科学结论须严谨：pH、显色、ppm 等不能被过度解读。",
     "危险环境取样以预先取得的模拟报告展示，不要求学生闻气味或进入危险操作。",
-    "TODO: 正式剧本/图鉴/修改清单中的人名、E编号、检验对象需组员确认后替换本骨架。"
+    "药品模拟检验的对象是药片。TODO: 正式剧本/图鉴/修改清单中的人名与 E 编号需组员确认后替换本骨架。"
   ],
   "hostNpc": {
     "id": "host",
@@ -61,7 +61,7 @@
       "role": "家属/照护相关（占位）",
       "location": "kitchen",
       "portrait": "#14b8a6",
-      "card": "TODO: 统一何叔与P3版本——药片检验 vs 酒精擦拭棉检验不得混用。工业酒精是否使用、药片是否过期、何叔是否知情，需在人物卡/报告/时间线一致。",
+      "card": "常来照看的家属。厨房药盒里送检的是日常药片（见模拟报告）。报告不能说明药片是否过期，也不能据此认为何叔已经知情。",
       "mockQA": [
         {
           "q": "你和伤者什么关系？",
@@ -69,7 +69,7 @@
         },
         {
           "q": "有没有用药或消毒相关物品？",
-          "a": "有一些日常用品。具体送检项目请以模拟报告为准。——TODO: 锁定唯一检验对象。"
+          "a": "厨房药盒里放着日常药片。模拟报告检验的就是这些药片。"
         },
         {
           "q": "23:30前后你在哪？",
@@ -77,7 +77,7 @@
         },
         {
           "q": "是否知情某些药剂过期或危险？",
-          "a": "我不确定。请不要把我的不确定说成已证实知情。"
+          "a": "药片有没有过有效期，我并不清楚。请不要把不确定说成我已经知情。"
         },
         {
           "q": "对周姨清洁工作有了解吗？",
@@ -467,7 +467,7 @@
           "y": 360,
           "w": 48,
           "h": 48,
-          "name": "药品盒（争议检验对象）",
+          "name": "药品盒",
           "evidenceIds": [
             "C-E05"
           ]
@@ -627,11 +627,11 @@
     },
     {
       "id": "C-E05",
-      "name": "药品相关检验（争议）",
+      "name": "药片显色检验",
       "stage": 2,
-      "source": "TODO冲突",
-      "studentText": "【TODO/冲突】剧本与网页不得混用「药片检验」与「酒精擦拭棉检验」。本卡仅占位，正式对象待组员统一。显色结果不能单独证明过期或健康影响。",
-      "teacherNote": "见 CONFLICTS_OR_TODOS.md"
+      "source": "模拟检验",
+      "studentText": "送检样品为药盒中的药片。模拟显色检验给出颜色变化（仅课堂示意，不是定量或定性鉴定）。该结果不能单独证明药片超过有效期，也不能确定其健康影响。",
+      "teacherNote": "检验对象已锁定为药片。显色不能单独证明过期或健康影响。药片是否过期、何叔是否知情，报告与问询均不下定论。"
     },
     {
       "id": "C-E06",
@@ -717,7 +717,7 @@
         "C-E06",
         "C-E07"
       ],
-      "teacherHint": "开放争议检验卡与浴室模拟报告（注意TODO）。"
+      "teacherHint": "开放药片检验卡（C-E05）与浴室模拟报告。"
     },
     {
       "id": 3,
@@ -748,7 +748,7 @@
         "The vote is about the action that directly caused the exposure. It is not a finding of intentional harm or a legal verdict.",
         "Scientific conclusions must stay careful: pH, color tests, and ppm must not be over-read.",
         "Sampling in a hazardous setting is shown through pre-collected mock reports. Students are not asked to smell anything or perform a dangerous procedure.",
-        "TODO: names, evidence IDs, and the test subject in the official script, field guide, and revision list should replace this skeleton after the team confirms them."
+        "The medicine mock test uses tablets. TODO: names and evidence IDs in the official script, field guide, and revision list should replace this skeleton after the team confirms them."
       ],
       "hostNpc": {
         "name": "Investigation host",
@@ -790,7 +790,7 @@
           "name": "Uncle He",
           "shortName": "He",
           "role": "Family / caregiving (placeholder)",
-          "card": "TODO: keep one version of Uncle He and P3. Do not mix the tablet test with the alcohol-wipe test. Whether industrial alcohol was used, whether the tablets were expired, and whether Uncle He knew must match across the character card, the report, and the timeline.",
+          "card": "A relative who often helps look after the household. The sample from the kitchen medicine box is everyday tablets (see the mock report). The report does not show whether the tablets were expired, and it does not show that Uncle He already knew.",
           "mockQA": [
             {
               "q": "What is your relationship to the injured person?",
@@ -798,7 +798,7 @@
             },
             {
               "q": "Were any medicine or disinfectant items involved?",
-              "a": "There were some everyday items. Please take the mock report as the submitted test. — TODO: lock a single test subject."
+              "a": "The kitchen medicine box holds everyday tablets. Those tablets are what the mock report tested."
             },
             {
               "q": "Where were you around 23:30?",
@@ -806,7 +806,7 @@
             },
             {
               "q": "Did you know some chemicals were expired or dangerous?",
-              "a": "I am not sure. Please do not turn my uncertainty into proven knowledge."
+              "a": "I do not know whether the tablets were past their expiry date. Please do not turn that uncertainty into proven knowledge."
             },
             {
               "q": "Do you know about Auntie Zhou’s cleaning?",
@@ -934,7 +934,7 @@
           "zones": {},
           "items": {
             "cup": "Cup / drink residue",
-            "medBox": "Medicine box (disputed test subject)"
+            "medBox": "Medicine box"
           }
         },
         "bath": {
@@ -974,9 +974,9 @@
           "studentText": "pH about 3, which supports that the sample is acidic. This alone cannot identify citric acid or judge how strong the acid is."
         },
         "C-E05": {
-          "name": "Medicine-related test (disputed)",
-          "source": "TODO conflict",
-          "studentText": "[TODO / conflict] The script and the web page must not mix the “tablet test” with the “alcohol-wipe test”. This card is only a placeholder until the team agrees on the official subject. A color result alone cannot prove expiry or a health effect."
+          "name": "Tablet color test",
+          "source": "Mock test",
+          "studentText": "The sample sent for testing is the tablets from the medicine box. The mock color test shows a color change (a classroom illustration, not a quantitative or qualitative identification). That result alone cannot prove the tablets are past their expiry date, and it cannot establish a health effect."
         },
         "C-E06": {
           "name": "Mixed residue in the bathroom",
@@ -1042,7 +1042,7 @@
         "投票問題關注“直接導致暴露事故”的行為，不表述為故意殺人或法律責任判決。",
         "科學結論須嚴謹：pH、顯色、ppm 等不能被過度解讀。",
         "危險環境取樣以預先取得的模擬報告展示，不要求學生聞氣味或進入危險操作。",
-        "TODO: 正式劇本/圖鑑/修改清單中的人名、E編號、檢驗對象需組員確認後替換本骨架。"
+        "藥品模擬檢驗的對象是藥片。TODO: 正式劇本/圖鑑/修改清單中的人名與 E 編號需組員確認後替換本骨架。"
       ],
       "hostNpc": {
         "name": "調查主持人",
@@ -1083,7 +1083,7 @@
           "name": "何叔",
           "shortName": "He",
           "role": "家屬/照護相關（佔位）",
-          "card": "TODO: 統一何叔與P3版本——藥片檢驗 vs 酒精擦拭棉檢驗不得混用。工業酒精是否使用、藥片是否過期、何叔是否知情，需在人物卡/報告/時間線一致。",
+          "card": "常來照看的家屬。廚房藥盒裡送檢的是日常藥片（見模擬報告）。報告不能說明藥片是否過期，也不能據此認為何叔已經知情。",
           "mockQA": [
             {
               "q": "你和傷者什麼關係？",
@@ -1091,7 +1091,7 @@
             },
             {
               "q": "有沒有用藥或消毒相關物品？",
-              "a": "有一些日常用品。具體送檢項目請以模擬報告為準。——TODO: 鎖定唯一檢驗對象。"
+              "a": "廚房藥盒裡放著日常藥片。模擬報告檢驗的就是這些藥片。"
             },
             {
               "q": "23:30前後你在哪？",
@@ -1099,7 +1099,7 @@
             },
             {
               "q": "是否知情某些藥劑過期或危險？",
-              "a": "我不確定。請不要把我的不確定說成已證實知情。"
+              "a": "藥片有沒有過有效期，我並不清楚。請不要把不確定說成我已經知情。"
             },
             {
               "q": "對周姨清潔工作有了解嗎？",
@@ -1225,7 +1225,7 @@
           },
           "items": {
             "cup": "水杯/飲料殘留",
-            "medBox": "藥品盒（爭議檢驗對象）"
+            "medBox": "藥品盒"
           }
         },
         "bath": {
@@ -1265,9 +1265,9 @@
           "studentText": "pH 約 3，支援樣品呈酸性；不能單憑此鑑定檸檬酸或判斷酸強弱。"
         },
         "C-E05": {
-          "name": "藥品相關檢驗（爭議）",
-          "source": "TODO衝突",
-          "studentText": "【TODO/衝突】劇本與網頁不得混用「藥片檢驗」與「酒精擦拭棉檢驗」。本卡僅佔位，正式對象待組員統一。顯色結果不能單獨證明過期或健康影響。"
+          "name": "藥片顯色檢驗",
+          "source": "模擬檢驗",
+          "studentText": "送檢樣品為藥盒中的藥片。模擬顯色檢驗給出顏色變化（僅課堂示意，不是定量或定性鑑定）。該結果不能單獨證明藥片超過有效期，也不能確定其健康影響。"
         },
         "C-E06": {
           "name": "浴室混合殘留",
