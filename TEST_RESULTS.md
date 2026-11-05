@@ -1,8 +1,8 @@
 # TEST_RESULTS
 
-Generated: 2026-11-05T11:17:43.848Z (script clock; report to user in Asia/Shanghai).
+Generated: 2026-11-05T12:42:09.622Z (script clock; report to user in Asia/Shanghai).
 
-Automated: 87/87 passed.
+Automated: 89/89 passed.
 
 | ID | Result | Name | Detail |
 |----|--------|------|--------|
@@ -15,7 +15,7 @@ Automated: 87/87 passed.
 | move-7 | PASS | walking up to a clue then opens it | item |
 | move-8 | PASS | clicking the host in range opens the host | host |
 | 0 | PASS | health |  |
-| physics-1a | PASS | create room physics | 40B3C9 |
+| physics-1a | PASS | create room physics | 1B3683 |
 | physics-1b | PASS | student join |  |
 | physics-9a | PASS | student case omits correctSuspectId |  |
 | physics-title | PASS | case title loaded | 意外的急刹车 |
@@ -40,7 +40,7 @@ Automated: 87/87 passed.
 | physics-12b | PASS | teacher auth required |  |
 | physics-stage | PASS | E07 locked until stage 2 | early=false late=true |
 | physics-isol | PASS | case id matches selection | physics |
-| chemistry-1a | PASS | create room chemistry | D87DA6 |
+| chemistry-1a | PASS | create room chemistry | 6DED1C |
 | chemistry-1b | PASS | student join |  |
 | chemistry-9a | PASS | student case omits correctSuspectId |  |
 | chemistry-title | PASS | case title loaded | 台风夜老宅 |
@@ -93,6 +93,8 @@ Automated: 87/87 passed.
 | lang-16 | PASS | Traditional mock presets differ from simplified and stay aligned | 事故前你的車速大約多少？ |
 | lang-17 | PASS | Traditional question returns a Traditional answer and keeps simplified canonical | 我記得制動前沒有超過限速50。當時路況還可以。 |
 | lang-18 | PASS | reveal honors zh-TW and still returns simplified and English | 標準答案：前車司機A |
+| chem-tablet | PASS | chemistry file locks the test subject to tablets | 药片显色检验 |
+| chem-tablet-api | PASS | served chemistry C-E05 and Uncle He are tablet-only | 药片显色检验 |
 
 ## Manual checks (not claimed automated)
 
@@ -103,6 +105,6 @@ Automated: 87/87 passed.
 - [ ] UI label 演示问答（Mock） visible during interview
 - [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal
 - [ ] No UI for second round / eliminate / bonus clues
-- [ ] Chemistry TODO markers visible on C-E05 card
+- [ ] Chemistry C-E05 is the tablet color test (no disputed-subject or alcohol-wipe wording)
 
 ## Automated suite green.

@@ -193,6 +193,59 @@ async function flowForCase(caseId, correctId, wrongId) {
   record(`${prefix}-isol`, 'case id matches selection', join.json.case.id === caseId, join.json.case.id);
 }
 
+async function tabletSubjectChecks() {
+  const fs = require('fs');
+  const path = require('path');
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'cases', 'chemistry.json'), 'utf8'));
+  const banned = ['争议检验', '爭議檢驗', 'TODO/冲突', 'TODO/衝突', 'TODO冲突', 'TODO衝突', 'TODO conflict', '酒精擦拭', 'alcohol-wipe', 'alcohol wipe', 'disputed test'];
+  const blob = JSON.stringify(raw);
+  const hit = banned.find((s) => blob.includes(s));
+  const e05 = (raw.evidence || []).find((e) => e.id === 'C-E05');
+  const med = (((raw.maps || []).find((m) => m.id === 'kitchen') || {}).items || []).find((i) => i.id === 'medBox');
+  const he = (raw.suspects || []).find((s) => s.id === 'he');
+  const enE = raw.i18n && raw.i18n.en && raw.i18n.en.evidence && raw.i18n.en.evidence['C-E05'];
+  const twE = raw.i18n && raw.i18n['zh-TW'] && raw.i18n['zh-TW'].evidence && raw.i18n['zh-TW'].evidence['C-E05'];
+  const enHe = raw.i18n && raw.i18n.en && raw.i18n.en.suspects && raw.i18n.en.suspects.he;
+  const twHe = raw.i18n && raw.i18n['zh-TW'] && raw.i18n['zh-TW'].suspects && raw.i18n['zh-TW'].suspects.he;
+  const hint = ((raw.stages || []).find((s) => s.id === 2) || {}).teacherHint || '';
+  const fileOk = !hit &&
+    raw.correctSuspectId === 'zhou' &&
+    med && med.name === '药品盒' &&
+    e05 && e05.name === '药片显色检验' && e05.source === '模拟检验' && e05.studentText.includes('药片') && !e05.studentText.includes('TODO') &&
+    he && he.card.includes('药片') && !he.card.includes('TODO') &&
+    hint.includes('药片') && !hint.includes('争议') &&
+    enE && enE.name === 'Tablet color test' && enE.source === 'Mock test' && /tablet/i.test(enE.studentText) &&
+    twE && twE.name === '藥片顯色檢驗' && twE.studentText.includes('藥片') &&
+    enHe && /tablet/i.test(enHe.card) && !/TODO/.test(enHe.card) &&
+    twHe && twHe.card.includes('藥片') && !twHe.card.includes('TODO');
+  record('chem-tablet', 'chemistry file locks the test subject to tablets', fileOk, hit || (e05 && e05.name));
+
+  const created = await req('POST', '/api/teacher/create', { caseId: 'chemistry', teacherName: 'T' });
+  const code = created.json.code;
+  await req('POST', `/api/teacher/${code}/stage`, { stage: 2 }, { 'x-teacher-token': created.json.teacherToken });
+  const joined = await req('POST', '/api/student/join', { code, groupId: 'TB', groupLabel: 'tablet' });
+  const card = ((joined.json.case && joined.json.case.evidence) || []).find((e) => e.id === 'C-E05');
+  const item = ((((joined.json.case.maps || []).find((m) => m.id === 'kitchen') || {}).items) || []).find((i) => i.id === 'medBox');
+  const heCard = ((joined.json.case.suspects || []).find((s) => s.id === 'he') || {}).card || '';
+  const joinedEn = await req('POST', '/api/student/join', { code, groupId: 'TBE', groupLabel: 'en' }, { 'x-lang': 'en' });
+  const cardEn = ((joinedEn.json.case && joinedEn.json.case.evidence) || []).find((e) => e.id === 'C-E05');
+  const joinedTw = await req('POST', '/api/student/join', { code, groupId: 'TBT', groupLabel: 'tw' }, { 'x-lang': 'zh-TW' });
+  const cardTw = ((joinedTw.json.case && joinedTw.json.case.evidence) || []).find((e) => e.id === 'C-E05');
+  const presets = await req('GET', `/api/student/${code}/interview/he/presets`, null, { 'x-group-token': joined.json.groupToken });
+  const qaBlob = JSON.stringify(presets.json.qa || []);
+  record(
+    'chem-tablet-api',
+    'served chemistry C-E05 and Uncle He are tablet-only',
+    !!(card && card.studentText.includes('药片') && card.source === '模拟检验' &&
+      item && item.name === '药品盒' && heCard.includes('药片') && !heCard.includes('TODO') &&
+      cardEn && /tablet/i.test(cardEn.studentText) && cardEn.name === 'Tablet color test' &&
+      cardTw && cardTw.studentText.includes('藥片') &&
+      qaBlob.includes('药片') && !qaBlob.includes('酒精') && !qaBlob.includes('TODO') &&
+      joined.json.case.correctSuspectId == null),
+    card && card.name
+  );
+}
+
 async function langChecks() {
   const listZh = await req('GET', '/api/cases');
   const listEn = await req('GET', '/api/cases?lang=en');
@@ -431,6 +484,7 @@ async function main() {
     );
 
     await langChecks();
+    await tabletSubjectChecks();
   } finally {
     server.close();
   }
@@ -458,7 +512,7 @@ async function main() {
     '- [ ] UI label 演示问答（Mock） visible during interview',
     '- [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal',
     '- [ ] No UI for second round / eliminate / bonus clues',
-    '- [ ] Chemistry TODO markers visible on C-E05 card',
+    '- [ ] Chemistry C-E05 is the tablet color test (no disputed-subject or alcohol-wipe wording)',
     '',
     failed.length ? '## Failures present — fix before claiming full acceptance.' : '## Automated suite green.',
     '',
