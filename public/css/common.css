@@ -1,0 +1,73 @@
+:root {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --panel2: #334155;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent2: #a78bfa;
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --bad: #ef4444;
+  --border: #475569;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); min-height: 100%; }
+a { color: var(--accent); }
+button, .btn {
+  background: var(--accent);
+  color: #0f172a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+button.secondary, .btn.secondary { background: var(--panel2); color: var(--text); }
+button.danger { background: var(--bad); color: #fff; }
+button.ok { background: var(--ok); color: #052e16; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+input, select, textarea {
+  background: #0b1220;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+label { display: block; margin: 0.5rem 0 0.25rem; color: var(--muted); font-size: 0.9rem; }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  max-width: 520px;
+  margin: 1rem auto;
+}
+.card h1, .card h2 { margin-top: 0; }
+.row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+.muted { color: var(--muted); }
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--panel2);
+  font-size: 0.8rem;
+}
+.badge.mock { background: #713f12; color: #fde68a; }
+.badge.ok { background: #14532d; color: #bbf7d0; }
+.badge.bad { background: #7f1d1d; color: #fecaca; }
+.badge.wait { background: #1e3a8a; color: #bfdbfe; }
+.hero {
+  text-align: center;
+  padding: 3rem 1rem 1rem;
+}
+.hero h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; margin: 0 auto; }
+@media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+.flash { padding: 0.75rem; border-radius: 8px; background: #172554; border: 1px solid #1d4ed8; margin: 0.5rem 0; }
+.error { background: #450a0a; border-color: #b91c1c; }
+.success { background: #052e16; border-color: #15803d; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 0.4rem 0.5rem; text-align: left; }

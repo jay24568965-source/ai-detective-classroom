@@ -1,0 +1,133 @@
+.game-shell {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  gap: 0;
+}
+.topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: #020617;
+  border-bottom: 1px solid var(--border);
+}
+.topbar .task { flex: 1; min-width: 200px; }
+.stage-wrap {
+  position: relative;
+  overflow: hidden;
+  background: #020617;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#gameCanvas {
+  background: #111827;
+  image-rendering: pixelated;
+  max-width: 100%;
+  max-height: calc(100vh - 56px);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.side {
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  overflow: auto;
+  padding: 0.75rem;
+}
+.side h3 { margin: 0.75rem 0 0.4rem; font-size: 0.95rem; }
+.side .list { font-size: 0.85rem; }
+.side .list div {
+  padding: 0.35rem 0.4rem;
+  border-bottom: 1px solid #334155;
+  cursor: pointer;
+}
+.side .list div:hover { background: #0f172a; }
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+}
+.modal.wide { width: min(720px, 100%); }
+.modal h2 { margin-top: 0; }
+.prompt-chip {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--accent);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  pointer-events: none;
+  display: none;
+}
+.touch-pad {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: none;
+  grid-template-columns: 48px 48px 48px;
+  grid-template-rows: 48px 48px 48px;
+  gap: 4px;
+}
+.touch-pad button {
+  width: 48px; height: 48px; padding: 0;
+  background: rgba(51, 65, 85, 0.85);
+  color: #fff;
+}
+.touch-pad .interact { grid-column: 2; grid-row: 2; background: rgba(56, 189, 248, 0.85); color: #0f172a; }
+.touch-pad .up { grid-column: 2; grid-row: 1; }
+.touch-pad .left { grid-column: 1; grid-row: 2; }
+.touch-pad .right { grid-column: 3; grid-row: 2; }
+.touch-pad .down { grid-column: 2; grid-row: 3; }
+@media (pointer: coarse) {
+  .touch-pad { display: grid; }
+}
+.teacher-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+.teacher-nav {
+  background: #020617;
+  border-right: 1px solid var(--border);
+  padding: 1rem;
+}
+.teacher-main { padding: 1rem; }
+.chat-log {
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  max-height: 220px;
+  overflow: auto;
+  font-size: 0.9rem;
+}
+.chat-log .q { color: var(--accent); }
+.chat-log .a { color: var(--text); margin-bottom: 0.5rem; }
+.preset-btns { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.5rem 0; }
+.preset-btns button { text-align: left; background: var(--panel2); color: var(--text); font-weight: 500; }
+@media (max-width: 900px) {
+  .game-shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .side { border-left: none; border-top: 1px solid var(--border); max-height: 40vh; }
+  .teacher-layout { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "ai-detective-classroom",
+  "version": "1.0.0",
+  "description": "AI侦探课堂 MVP - INT6066 group project (苏俊华 webpage+test)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/acceptance.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.1"
+  }
+}
