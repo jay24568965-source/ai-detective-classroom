@@ -6,7 +6,10 @@
 const AIAdapter = {
   provider: 'mock',
   label() {
-    return this.provider === 'mock' ? '演示问答（Mock）' : '真实AI（Convai）';
+    if (this.provider === 'mock') {
+      return window.I18N ? I18N.t('badge.mock') : '演示问答（Mock）';
+    }
+    return window.I18N && I18N.getLang() === 'en' ? 'Live AI (Convai)' : '真实AI（Convai）';
   },
   async ask({ code, token, suspectId, question }) {
     // Always go through server; Convai would be server-side later

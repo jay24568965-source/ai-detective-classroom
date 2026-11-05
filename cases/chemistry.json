@@ -736,5 +736,301 @@
       "科学边界：pH/显色/ppm 均不可过度解读。",
       "【骨架】完整证据链细节待组员正式剧本替换。"
     ]
+  },
+  "i18n": {
+    "en": {
+      "title": "The Typhoon-Night Old House",
+      "subject": "Chemistry",
+      "durationHint": "about 60 minutes",
+      "voteQuestion": "Whose action directly caused this bathroom exposure incident?",
+      "background": "On a typhoon night, a bathroom exposure incident occurred in an old house. The injured person, Teacher Yu, entered the bathroom that evening, then became unwell and was found soon after. Students gather clues in the house, question the people involved, finish a chemistry analysis, and name the person whose action directly caused the exposure. (Final art and the full script come from the team; this config is a playable skeleton.)",
+      "briefing": [
+        "The vote is about the action that directly caused the exposure. It is not a finding of intentional harm or a legal verdict.",
+        "Scientific conclusions must stay careful: pH, color tests, and ppm must not be over-read.",
+        "Sampling in a hazardous setting is shown through pre-collected mock reports. Students are not asked to smell anything or perform a dangerous procedure.",
+        "TODO: names, evidence IDs, and the test subject in the official script, field guide, and revision list should replace this skeleton after the team confirms them."
+      ],
+      "hostNpc": {
+        "name": "Investigation host",
+        "shortName": "Host",
+        "role": "Host",
+        "greeting": "Welcome to the typhoon-night house investigation. After the search, interviews, and chemistry analysis, wait until the teacher opens voting, then come back to me to submit the final accusation.",
+        "votePrompt": "The teacher has opened the final vote. Choose the person whose action directly caused the incident, and fill in the evidence and the scientific reasoning. Each group may submit only once."
+      },
+      "suspects": {
+        "zhou": {
+          "name": "Auntie Zhou",
+          "shortName": "Zhou",
+          "role": "Housekeeping / cleaning (placeholder)",
+          "card": "Correct accusation target (skeleton). May involve mixing cleaning products. The official motive, and how much she knew, still need the team to confirm.",
+          "mockQA": [
+            {
+              "q": "What did you do that night?",
+              "a": "I helped tidy the cleaning products near the bathroom. I thought they were all cleaners and did not read the labels carefully."
+            },
+            {
+              "q": "Did you mix different chemicals?",
+              "a": "I… may have used bottles that looked similar together. I did not know the ingredients at the time."
+            },
+            {
+              "q": "Did you know a harmful gas might form?",
+              "a": "I only heard about the risk afterward. I really did not expect this."
+            },
+            {
+              "q": "Where were you before the injured person entered the bathroom?",
+              "a": "I was busy with something else on the first floor. I was not watching the bathroom the whole time."
+            },
+            {
+              "q": "Where did the cleaners come from?",
+              "a": "Some were already in the house, and some were left from an earlier purchase. A few labels had faded. — TODO: check the purchase chain against the official script."
+            }
+          ]
+        },
+        "he": {
+          "name": "Uncle He",
+          "shortName": "He",
+          "role": "Family / caregiving (placeholder)",
+          "card": "TODO: keep one version of Uncle He and P3. Do not mix the tablet test with the alcohol-wipe test. Whether industrial alcohol was used, whether the tablets were expired, and whether Uncle He knew must match across the character card, the report, and the timeline.",
+          "mockQA": [
+            {
+              "q": "What is your relationship to the injured person?",
+              "a": "I often come to help look after things. I was in the house that night too."
+            },
+            {
+              "q": "Were any medicine or disinfectant items involved?",
+              "a": "There were some everyday items. Please take the mock report as the submitted test. — TODO: lock a single test subject."
+            },
+            {
+              "q": "Where were you around 23:30?",
+              "a": "I was near the kitchen. I went over after I heard a noise."
+            },
+            {
+              "q": "Did you know some chemicals were expired or dangerous?",
+              "a": "I am not sure. Please do not turn my uncertainty into proven knowledge."
+            },
+            {
+              "q": "Do you know about Auntie Zhou’s cleaning?",
+              "a": "She often tidies up. I did not check every detail."
+            }
+          ]
+        },
+        "lin": {
+          "name": "Student Lin",
+          "shortName": "Lin",
+          "role": "Visitor / student (placeholder)",
+          "card": "TODO: the official name and movements that night follow the script.",
+          "mockQA": [
+            {
+              "q": "Why were you at the old house?",
+              "a": "I was staying over or visiting because of the typhoon. — TODO: confirm the setting."
+            },
+            {
+              "q": "Did you enter the bathroom?",
+              "a": "I did not enter during the time of the incident."
+            },
+            {
+              "q": "What did you hear?",
+              "a": "Around 23:38 there seemed to be an unusual sound. I did not react right away."
+            },
+            {
+              "q": "Did you see anyone near the bathroom?",
+              "a": "I remember someone moving on the first floor, but I could not tell who."
+            },
+            {
+              "q": "What about chemistry?",
+              "a": "I am only a student. I would not run a dangerous experiment on my own."
+            }
+          ]
+        },
+        "wu": {
+          "name": "Dr. Wu",
+          "shortName": "Wu",
+          "role": "Responder on scene (placeholder)",
+          "card": "TODO: arrival time and the boundary of the professional opinion still need confirmation. This character must not replace the students’ reasoning.",
+          "mockQA": [
+            {
+              "q": "When did you arrive?",
+              "a": "I came after being contacted and helped with the first response. — TODO: exact arrival time."
+            },
+            {
+              "q": "What was your first impression?",
+              "a": "It looked like exposure to an irritant gas. The final account should follow the mock tests and the scene reconstruction."
+            },
+            {
+              "q": "Can symptoms alone establish the cause?",
+              "a": "No. You need evidence of the source, the buildup, and the exposure path."
+            },
+            {
+              "q": "Did you move anything at the scene?",
+              "a": "First aid came first, so things may have been moved slightly. The survey record will note that."
+            },
+            {
+              "q": "Who is most suspicious?",
+              "a": "That is not a conclusion I should give before the vote."
+            }
+          ]
+        },
+        "zhao": {
+          "name": "Neighbor Zhao",
+          "shortName": "Zhao",
+          "role": "Neighbor (placeholder)",
+          "card": "TODO: what the neighbor could see, and the timeline, still need the script.",
+          "mockQA": [
+            {
+              "q": "What did you hear?",
+              "a": "The wind was loud. I faintly heard someone call inside, then a door open."
+            },
+            {
+              "q": "Did you see a suspicious person leave?",
+              "a": "Visibility was poor on a typhoon night. I can’t say."
+            },
+            {
+              "q": "What do you know about this household?",
+              "a": "I know the house keeps cleaners and some old items. I don’t know the details."
+            },
+            {
+              "q": "What about around 23:42?",
+              "a": "About then, people were coming and going outside."
+            },
+            {
+              "q": "Did you smell an irritant?",
+              "a": "There was a faint discomfort at the door, but students must not simulate sniff-sampling in the game."
+            }
+          ]
+        }
+      },
+      "maps": {
+        "hall": {
+          "name": "First-floor hall",
+          "doors": {
+            "to_corridor": "→ Corridor",
+            "to_kitchen": "→ Kitchen"
+          },
+          "zones": {
+            "voteArea": "Discussion / vote area",
+            "stair": "Stairs (schematic)"
+          },
+          "items": {
+            "timelineBoard": "Timeline notice board",
+            "cleanerShelf": "Cleaning-supply shelf"
+          }
+        },
+        "corridor": {
+          "name": "Corridor",
+          "doors": {
+            "to_hall": "→ Hall",
+            "to_bath": "→ Bathroom"
+          },
+          "zones": {},
+          "items": {
+            "shoePrint": "Floor trace (shoe powder?)"
+          }
+        },
+        "kitchen": {
+          "name": "Kitchen",
+          "doors": {
+            "to_hall_k": "→ Hall"
+          },
+          "zones": {},
+          "items": {
+            "cup": "Cup / drink residue",
+            "medBox": "Medicine box (disputed test subject)"
+          }
+        },
+        "bath": {
+          "name": "Bathroom (incident site)",
+          "doors": {
+            "to_corr_b": "→ Corridor"
+          },
+          "zones": {
+            "danger": "Hazard zone (mock report only)"
+          },
+          "items": {
+            "drain": "Drain / mixed-residue sample point",
+            "labReport": "Mock report pre-collected by specialists",
+            "chemDesk": "Chemistry analysis bench"
+          }
+        }
+      },
+      "evidence": {
+        "C-E01": {
+          "name": "Incident timeline",
+          "source": "Public briefing",
+          "studentText": "Teacher Yu entered the bathroom at 23:30; an unusual sound at 23:38; found at 23:42. Injured person: Teacher Yu."
+        },
+        "C-E02": {
+          "name": "Cleaner-bottle label fragments",
+          "source": "Scene survey (skeleton)",
+          "studentText": "Empty bottles or residue of a suspected acid cleaner and a chlorine cleaner were in the same area. Placement alone does not prove they were mixed."
+        },
+        "C-E03": {
+          "name": "Corridor trace",
+          "source": "Scene survey (skeleton)",
+          "studentText": "There is a pale powdery trace on the floor. Whether it contacted the injured person needs more evidence. — TODO: shoe-powder test details still to be confirmed."
+        },
+        "C-E04": {
+          "name": "First screen of the cup residue",
+          "source": "Mock test (skeleton)",
+          "studentText": "pH about 3, which supports that the sample is acidic. This alone cannot identify citric acid or judge how strong the acid is."
+        },
+        "C-E05": {
+          "name": "Medicine-related test (disputed)",
+          "source": "TODO conflict",
+          "studentText": "[TODO / conflict] The script and the web page must not mix the “tablet test” with the “alcohol-wipe test”. This card is only a placeholder until the team agrees on the official subject. A color result alone cannot prove expiry or a health effect."
+        },
+        "C-E06": {
+          "name": "Mixed residue in the bathroom",
+          "source": "Mock test",
+          "studentText": "The sample point shows residue features compatible with mixed cleaners (skeleton description). The exposure path still needs the ventilation and the timeline."
+        },
+        "C-E07": {
+          "name": "Oxidizer first screen (P5)",
+          "source": "Mock report",
+          "studentText": "The oxidizer first screen is positive (skeleton). Keep it separate from a mock recheck that would support chlorine gas. Do not jump to a qualitative conclusion in one step."
+        },
+        "C-E08": {
+          "name": "Concentration estimate note (P6)",
+          "source": "Ideal-model estimate",
+          "studentText": "The model estimate of about 105 ppm is an ideal-model value, not a field measurement, and it does not by itself decide the injury. When you use the 10 ppm reference, say what it means. It is not the only safety boundary."
+        }
+      },
+      "calcTasks": {
+        "ph": {
+          "title": "Reading an acidic sample",
+          "prompt": "Explain what pH ≈ 3 can support, and what it cannot prove.",
+          "fields": {
+            "phNote": "Your conclusion (text)"
+          }
+        },
+        "ppm": {
+          "title": "Boundaries of the ppm model",
+          "prompt": "How should 105 ppm and the 10 ppm reference each be stated?",
+          "fields": {
+            "ppmNote": "Your wording (text)"
+          }
+        },
+        "chain": {
+          "title": "Evidence-chain outline",
+          "prompt": "From source → buildup → exposure → symptoms, list your reasoning points. You do not need a character’s confession before the vote.",
+          "fields": {
+            "chainNote": "Reasoning outline"
+          }
+        }
+      },
+      "stages": {
+        "1": "Act I",
+        "2": "Act II",
+        "3": "Act III"
+      },
+      "revealSummary": {
+        "headline": "Answer key: Auntie Zhou",
+        "points": [
+          "The direct cause points to conduct related to improperly mixing cleaners (Auntie Zhou).",
+          "A full confession from Auntie Zhou is not required before the vote. The full account is shown after the reveal.",
+          "Scientific boundary: pH, color tests, and ppm must not be over-read.",
+          "[Skeleton] The full evidence-chain detail waits for the team’s official script."
+        ]
+      }
+    }
   }
 }

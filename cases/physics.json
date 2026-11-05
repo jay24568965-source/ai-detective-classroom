@@ -779,5 +779,332 @@
       "猫/小动物仅有证词支持，不能由物理计算证明A当时看见了它。",
       "本投票只判定限速陈述与模型冲突，不判法律责任。"
     ]
+  },
+  "i18n": {
+    "en": {
+      "title": "The Unexpected Hard Brake",
+      "subject": "Physics",
+      "durationHint": "about 60 minutes",
+      "voteQuestion": "Of the five people, who explicitly claimed they were not exceeding the 50 km/h limit before braking, in a statement that contradicts this case’s physics reconstruction?",
+      "background": "At dusk, a rear-end collision happened on an outer-city road with a 50 km/h limit. Blue car A was ahead and gray van B was behind, same direction and same lane. There is no usable surveillance video, no one was injured, and the vehicles have been moved to a safe spot. Students investigate the preserved records in a closed scene mockup and in the investigation command room.",
+      "briefing": [
+        "This class only decides whose explicit speed-limit statement contradicts the physics reconstruction.",
+        "It does not decide legal liability, the sole cause of the crash, or whether anyone lied on purpose.",
+        "Every piece of evidence you need can be collected before the final vote. There is only one final vote.",
+        "Suggested flow: briefing 5′ → scene search 10′ → interviews 10′ → physics analysis 25′ → accusation and review 10′."
+      ],
+      "hostNpc": {
+        "name": "Investigation host",
+        "shortName": "Host",
+        "role": "Host",
+        "greeting": "Welcome to the command room. After the scene search, interviews, and physics analysis, wait until the teacher opens voting, then come back to me to submit the final accusation.",
+        "votePrompt": "The teacher has opened the final vote. Choose one person and fill in the evidence and the scientific reasoning. Each group may submit only once."
+      },
+      "suspects": {
+        "A": {
+          "name": "Lead driver A",
+          "shortName": "A",
+          "role": "Driver of the blue car",
+          "card": "Explicitly claims to remember not exceeding 50 km/h before braking.",
+          "mockQA": [
+            {
+              "q": "About how fast were you before the crash?",
+              "a": "I remember not exceeding the 50 limit before I braked. The road was all right at the time."
+            },
+            {
+              "q": "Why the hard brake?",
+              "a": "I thought I saw something run into the lane… I’m not sure. It might have been a small animal. I hit the brakes by instinct."
+            },
+            {
+              "q": "Are you sure you were not speeding?",
+              "a": "I don’t think so. I usually pay attention to the speed-limit signs."
+            },
+            {
+              "q": "What state was your car in at impact?",
+              "a": "I felt I had almost stopped, and then the car behind hit me."
+            },
+            {
+              "q": "Could you have misremembered the speed?",
+              "a": "Memory can be fuzzy… but I believed I was driving at the limit. The records should settle the exact number."
+            }
+          ]
+        },
+        "B": {
+          "name": "Following driver B",
+          "shortName": "B",
+          "role": "Driver of the gray van",
+          "card": "Felt they were not going fast, but admits to following closely.",
+          "mockQA": [
+            {
+              "q": "Were you driving fast?",
+              "a": "I didn’t think I was fast, but I admit I was following a bit close. The car ahead braked hard, and I braked as soon as I reacted."
+            },
+            {
+              "q": "Were you speeding?",
+              "a": "I wasn’t trying to speed. I can’t give an exact speed. I wasn’t watching the gauge."
+            },
+            {
+              "q": "About how close were you following?",
+              "a": "Hard to say. It felt close. I only realized afterward that it might not have been enough."
+            },
+            {
+              "q": "When did you start braking?",
+              "a": "After I saw the lead car’s brake lights. There may have been a short reaction delay."
+            },
+            {
+              "q": "What do you think of the lead car?",
+              "a": "They braked very hard. I can’t judge how fast they were going."
+            }
+          ]
+        },
+        "C": {
+          "name": "Witness C",
+          "shortName": "C",
+          "role": "Pedestrian by the bus stop",
+          "card": "Turned after hearing a vehicle approach, saw what looked like a small animal run toward the lane, then heard a hard brake and a collision.",
+          "mockQA": [
+            {
+              "q": "What did you see?",
+              "a": "I first heard a car approaching. When I turned, I thought I saw a small animal run toward the lane, then a hard brake and a collision."
+            },
+            {
+              "q": "Can you judge the speed?",
+              "a": "No. I can’t measure speed. I only have an impression of the order of events."
+            },
+            {
+              "q": "Are you sure it was a cat?",
+              "a": "No. It only looked like a small animal. That is not an established fact."
+            },
+            {
+              "q": "Which car braked first?",
+              "a": "It sounded like the lead car braked hard first, then the collision. The scene record should settle the details."
+            },
+            {
+              "q": "Where were you?",
+              "a": "Near the bus stop, not in the lane."
+            }
+          ]
+        },
+        "D": {
+          "name": "Roadside clerk D",
+          "shortName": "D",
+          "role": "Clerk at a roadside shop",
+          "card": "Came closer only after hearing the hard brake and the impact.",
+          "mockQA": [
+            {
+              "q": "Did you see the crash happen?",
+              "a": "No. I came out only after I heard the hard brake and the impact."
+            },
+            {
+              "q": "Can you judge the speed?",
+              "a": "No. I did not see the driving before the crash."
+            },
+            {
+              "q": "Was anything unusual at the scene?",
+              "a": "Both vehicles were already stopped, and someone was on the phone. The survey record covers the marks."
+            },
+            {
+              "q": "Is there any surveillance?",
+              "a": "The shop camera does not cover this stretch of lane, so it can’t help."
+            },
+            {
+              "q": "Any other impression of the sound?",
+              "a": "A loud skid and a bang, then it went quiet."
+            }
+          ]
+        },
+        "E": {
+          "name": "Waiting passenger E",
+          "shortName": "E",
+          "role": "Passenger waiting for a bus",
+          "card": "Subjectively felt that B was following closely before the crash, and photographed the stopped vehicles afterward.",
+          "mockQA": [
+            {
+              "q": "What did you notice before the crash?",
+              "a": "I subjectively felt the rear vehicle was following quite close, but I can’t give a distance or a speed."
+            },
+            {
+              "q": "Did you take a photo?",
+              "a": "I photographed the stopped vehicles after the crash. That photo cannot measure the speed before the crash."
+            },
+            {
+              "q": "Can you prove who was speeding?",
+              "a": "No. I can’t measure speed, and I should not be treated as a speed witness."
+            },
+            {
+              "q": "Did you see a small animal?",
+              "a": "I didn’t notice that. I was looking at the vehicles."
+            },
+            {
+              "q": "Where did the two vehicles finally stop?",
+              "a": "The photo shows the final stopped positions. Exact figures should follow the survey marks."
+            }
+          ]
+        }
+      },
+      "maps": {
+        "road": {
+          "name": "Road survey area",
+          "doors": {
+            "to_hq": "→ Command room"
+          },
+          "zones": {
+            "lane": "Same-direction lane",
+            "bus": "Bus stop",
+            "shoulder": "Shoulder / safe area"
+          },
+          "items": {
+            "sign": "Speed-limit record",
+            "carA": "Blue car A (mockup)",
+            "carB": "Gray van B (mockup)",
+            "skid": "Brake-mark survey",
+            "logger": "Event-recorder terminal",
+            "calib": "Calibrated event-log cabinet",
+            "report": "Mock appraisal-report rack"
+          }
+        },
+        "hq": {
+          "name": "Investigation command room",
+          "doors": {
+            "to_road": "→ Road survey area"
+          },
+          "zones": {
+            "interview": "Interview seats",
+            "board": "Evidence wall",
+            "bench": "Physics bench",
+            "voteArea": "Vote discussion area"
+          },
+          "items": {
+            "whiteboard": "Evidence-wall board",
+            "physicsDesk": "Physics analysis bench"
+          }
+        }
+      },
+      "evidence": {
+        "E01": {
+          "name": "Speed-limit record",
+          "source": "Mock measurement record",
+          "studentText": "The speed limit on this stretch is 50 km/h."
+        },
+        "E02": {
+          "name": "Mass of car A",
+          "source": "Mock measurement record",
+          "studentText": "Mass of blue car A: m_A = 1000 kg."
+        },
+        "E03": {
+          "name": "Mass of van B",
+          "source": "Mock measurement record",
+          "studentText": "Mass of gray van B: m_B = 1500 kg."
+        },
+        "E04": {
+          "name": "Braking displacement of A",
+          "source": "Mock measurement record",
+          "studentText": "Displacement of A from the start of braking to impact: s_A = 25 m."
+        },
+        "E05": {
+          "name": "Shared skid after impact",
+          "source": "Mock measurement record",
+          "studentText": "After impact the two vehicles slid 6 m together."
+        },
+        "E06": {
+          "name": "Recorder event-time summary",
+          "source": "Calibrated event log",
+          "studentText": "The recorder video is damaged, but event timestamps remain and can be used to check the sequence."
+        },
+        "E07": {
+          "name": "Time from braking to impact for A",
+          "source": "Calibrated event log",
+          "studentText": "Time from the start of A’s braking to impact: Δt_A = 2.5 s."
+        },
+        "E08": {
+          "name": "Magnitude of A’s deceleration",
+          "source": "Mock appraisal",
+          "studentText": "Magnitude of A’s braking deceleration: a_A = 8 m/s² (absolute value)."
+        },
+        "E09": {
+          "name": "Magnitude of B’s deceleration",
+          "source": "Mock appraisal",
+          "studentText": "Magnitude of B’s braking deceleration: a_B = 2 m/s²."
+        },
+        "E10": {
+          "name": "Delay before B starts braking",
+          "source": "Calibrated event log",
+          "studentText": "Relative to A starting to brake, B’s braking starts 1.5 s later."
+        },
+        "E11": {
+          "name": "Magnitude of the shared deceleration",
+          "source": "Mock appraisal",
+          "studentText": "Magnitude of the shared post-impact deceleration: a_c = 3 m/s²."
+        },
+        "E12": {
+          "name": "Collision-model assumption",
+          "source": "Model assumption",
+          "studentText": "A one-dimensional perfectly inelastic collision is assumed (a common speed after impact)."
+        },
+        "E13": {
+          "name": "Calculated result: speed of A",
+          "source": "Student calculation",
+          "studentText": "From the student calculation: about 20 m/s before A braked, and about 0 m/s just before impact."
+        },
+        "E14": {
+          "name": "Calculated result: B’s speed at impact",
+          "source": "Student calculation",
+          "studentText": "From the student calculation: B’s speed at the instant of impact is about 10 m/s."
+        },
+        "E15": {
+          "name": "Calculated result: B’s initial speed and gap",
+          "source": "Student calculation",
+          "studentText": "From the student calculation: about 12 m/s before B braked; initial clear gap about 4 m."
+        }
+      },
+      "calcTasks": {
+        "alpha": {
+          "title": "Alpha motion model",
+          "prompt": "Using E04, E07, and E08, find A’s speed before braking, v_A0, and A’s speed just before impact.",
+          "fields": {
+            "vA0": "A’s speed before braking (m/s)",
+            "vA1": "A’s speed just before impact (m/s)"
+          }
+        },
+        "beta": {
+          "title": "Beta collision analysis",
+          "prompt": "Using the masses, the shared skid, and the perfectly inelastic assumption, find the common speed after impact and B’s speed at the instant of impact.",
+          "fields": {
+            "vc": "Common speed after impact (m/s)",
+            "vB1": "B’s speed at impact (m/s)"
+          }
+        },
+        "gamma": {
+          "title": "Gamma energy check",
+          "prompt": "Estimate the mechanical-energy loss in the collision model (order of magnitude).",
+          "fields": {
+            "dE": "Mechanical-energy loss (J)"
+          }
+        },
+        "delta": {
+          "title": "Delta relative motion",
+          "prompt": "Find B’s speed before braking and the initial clear gap. Note: 29 m is only the critical initial gap for this problem’s parameters.",
+          "fields": {
+            "vB0": "B’s speed before braking (m/s)",
+            "gap": "Initial clear gap (m)"
+          }
+        }
+      },
+      "stages": {
+        "1": "Act I",
+        "2": "Act II",
+        "3": "Act III"
+      },
+      "revealSummary": {
+        "headline": "Answer key: lead driver A",
+        "points": [
+          "A’s speed before braking reconstructs to 20 m/s = 72 km/h, which contradicts the explicit claim of “not over 50 km/h”.",
+          "B was about 12 m/s = 43.2 km/h before braking and was not speeding in the model; the initial clear gap was about 4 m.",
+          "29 m is the critical initial gap under this problem’s fixed parameters, not a universal safe following distance.",
+          "A cat or small animal is supported only by testimony. The physics calculation does not prove that A saw it.",
+          "This vote only decides the conflict between the speed-limit statement and the model. It does not decide legal liability."
+        ]
+      }
+    }
   }
 }

@@ -13,6 +13,15 @@
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
+  function tr(key, vars, fallback) {
+    if (typeof window !== 'undefined' && window.I18N && typeof window.I18N.t === 'function') {
+      const s = window.I18N.t(key, vars);
+      if (s && s !== key) return s;
+    }
+    if (!vars) return fallback;
+    return String(fallback).replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : ''));
+  }
+
   function distPointRect(px, py, r) {
     const cx = Math.max(r.x, Math.min(px, r.x + r.w));
     const cy = Math.max(r.y, Math.min(py, r.y + r.h));
@@ -49,6 +58,16 @@
         (progress && progress.position && caseData.maps.find((m) => m.id === progress.position.mapId)) ||
         caseData.maps[0];
       this.setMap(startMap.id, progress && progress.position ? progress.position.x : null, progress && progress.position ? progress.position.y : null);
+    }
+
+    /** Swap localized case text without moving the player or rebuilding the room. */
+    relocalize(caseData) {
+      const mapId = this.map && this.map.id;
+      const x = this.player.x;
+      const y = this.player.y;
+      this.caseData = caseData;
+      if (mapId) this.setMap(mapId, x, y);
+      else this.draw();
     }
 
     setMap(mapId, x, y) {
@@ -97,7 +116,7 @@
       const candidates = [];
       (this.map.items || []).forEach((it) => {
         const d = distPointRect(px, py, it);
-        if (d < 36) candidates.push({ type: 'item', ref: it, d, label: `按 E 调查：${it.name}` });
+        if (d < 36) candidates.push({ type: 'item', ref: it, d, label: tr('prompt.investigate', { name: it.name }, `按 E 调查：${it.name}`) });
       });
       (this.map.npcs || []).forEach((n) => {
         const d = Math.hypot(px - n.x, py - n.y);
@@ -109,14 +128,14 @@
             type: isHost ? 'host' : 'npc',
             ref: n,
             d,
-            label: `按 E 交谈：${name}`,
+            label: tr('prompt.talk', { name }, `按 E 交谈：${name}`),
             suspectId: n.id,
           });
         }
       });
       (this.map.doors || []).forEach((door) => {
         const d = distPointRect(px, py, door);
-        if (d < 28) candidates.push({ type: 'door', ref: door, d, label: `按 E ${door.label || '进入'}` });
+        if (d < 28) candidates.push({ type: 'door', ref: door, d, label: tr('prompt.door', { label: door.label || tr('prompt.enter', null, '进入') }, `按 E ${door.label || '进入'}`) });
       });
       candidates.sort((a, b) => a.d - b.d);
       this.near = candidates[0] || null;
@@ -207,7 +226,11 @@
         ctx.fillRect(d.x, d.y, d.w, d.h);
         ctx.fillStyle = '#e0f2fe';
         ctx.font = '11px sans-serif';
-        ctx.fillText(d.label || '门', d.x, d.y - 4);
+        const doorLabel = d.label || tr('scene.door', null, '门');
+        const doorW = ctx.measureText(doorLabel).width;
+        let doorX = d.x;
+        if (doorX + doorW > m.width - 6) doorX = Math.max(6, m.width - doorW - 6);
+        ctx.fillText(doorLabel, doorX, d.y - 4);
       });
 
       (m.items || []).forEach((it) => {
@@ -241,7 +264,7 @@
         x: this.player.x,
         y: this.player.y,
         color: '#38bdf8',
-        label: '马里奥',
+        label: tr('scene.player', null, '马里奥'),
         player: true,
         facing: this.player.facing,
         anim: this.player.anim,
@@ -250,12 +273,14 @@
       sprites.sort((a, b) => a.y - b.y);
       sprites.forEach((s) => this.drawSprite(s));
 
-      // map title
-      ctx.fillStyle = 'rgba(15,23,42,0.8)';
-      ctx.fillRect(8, 8, 220, 28);
-      ctx.fillStyle = '#e2e8f0';
+      // map title — width follows the localized name
       ctx.font = 'bold 14px sans-serif';
-      ctx.fillText(m.name, 16, 28);
+      const title = m.name || '';
+      const titleW = Math.ceil(ctx.measureText(title).width) + 20;
+      ctx.fillStyle = 'rgba(15,23,42,0.8)';
+      ctx.fillRect(8, 8, Math.max(120, Math.min(titleW, m.width - 16)), 28);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(title, 16, 28);
     }
 
     drawSceneBackground(m) {
@@ -301,7 +326,7 @@
         ctx.fillRect(m.width - 140, m.height * 0.28, 90, 50);
         ctx.fillStyle = '#e2e8f0';
         ctx.font = '12px sans-serif';
-        ctx.fillText('公交站', m.width - 120, m.height * 0.28 - 6);
+        ctx.fillText(tr('scene.busStop', null, '公交站'), m.width - 120, m.height * 0.28 - 6);
       } else if (theme === 'hq') {
         const g = ctx.createLinearGradient(0, 0, 0, m.height);
         g.addColorStop(0, '#1e293b');
@@ -322,7 +347,7 @@
         ctx.strokeRect(40, 50, 260, 120);
         ctx.fillStyle = '#e2e8f0';
         ctx.font = 'bold 13px sans-serif';
-        ctx.fillText('证据墙 / 物理工作台', 55, 75);
+        ctx.fillText(tr('scene.hqBoard', null, '证据墙 / 物理工作台'), 55, 75);
         for (let i = 0; i < 3; i++) {
           ctx.fillStyle = '#fef3c7';
           ctx.fillRect(55 + i * 70, 90, 55, 55);

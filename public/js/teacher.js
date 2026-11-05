@@ -1,19 +1,77 @@
 const LS_KEY = 'ai-detective-teacher';
 
+let CASES = [];
+let CODE = '';
+let TOKEN = '';
+let pollTimer = null;
+let lastReveal = null;
+let lastRevealEn = null;
+
 function show(el, text, cls) {
   el.style.display = 'block';
   el.className = 'flash' + (cls ? ' ' + cls : '');
-  el.textContent = text;
+  el.textContent = I18N.serverText(text);
+}
+
+function caseLabel(c) {
+  const en = c.i18n && c.i18n.en;
+  if (I18N.getLang() === 'en' && en && en.title) return `${en.subject || c.subject} · ${en.title}`;
+  const zh = (c.locale === 'en' && c.i18n && c.i18n.zh) || c;
+  return `${zh.subject} · ${zh.title}`;
+}
+
+function renderCaseOptions() {
+  const sel = document.getElementById('caseSelect');
+  const current = sel.value;
+  sel.innerHTML = CASES.map((c) => `<option value="${c.id}">${caseLabel(c)}</option>`).join('');
+  if (current && CASES.some((c) => c.id === current)) sel.value = current;
+}
+
+function roomTitle(s) {
+  if (I18N.getLang() === 'en' && s.caseTitleEn) return s.caseTitleEn;
+  return s.caseTitle;
+}
+
+function paintReveal() {
+  const box = document.getElementById('revealBox');
+  const sum = I18N.getLang() === 'en' && lastRevealEn ? lastRevealEn : lastReveal;
+  if (!sum) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  box.innerHTML = `<strong>${sum.headline}</strong><ul>${(sum.points || []).map((p) => `<li>${p}</li>`).join('')}</ul>`;
+}
+
+function rememberReveal(data) {
+  if (!data) return;
+  if (data.revealSummaryZh) {
+    lastReveal = data.revealSummaryZh;
+    lastRevealEn = data.revealSummaryEn || data.revealSummary;
+  } else if (data.revealSummary) {
+    lastReveal = data.revealSummary;
+    lastRevealEn = data.revealSummaryEn || null;
+  }
 }
 
 async function init() {
-  const sel = document.getElementById('caseSelect');
+  const nameInput = document.getElementById('teacherName');
+  nameInput.addEventListener('input', () => {
+    nameInput.dataset.edited = '1';
+  });
+  const syncName = () => {
+    if (nameInput.dataset.edited === '1') return;
+    nameInput.value = I18N.getLang() === 'en' ? 'Teacher' : '教师';
+  };
+  syncName();
+
   const cases = await API.cases();
-  sel.innerHTML = cases.cases.map((c) => `<option value="${c.id}">${c.subject} · ${c.title}</option>`).join('');
+  CASES = cases.cases || [];
+  renderCaseOptions();
 
   document.getElementById('btnCreate').onclick = async () => {
     try {
-      const data = await API.createRoom(sel.value, document.getElementById('teacherName').value);
+      const data = await API.createRoom(document.getElementById('caseSelect').value, nameInput.value);
       localStorage.setItem(LS_KEY, JSON.stringify({ code: data.code, teacherToken: data.teacherToken, caseId: data.caseId }));
       enterConsole(data.code, data.teacherToken);
     } catch (e) {
@@ -23,24 +81,30 @@ async function init() {
 
   document.getElementById('btnRestore').onclick = () => {
     const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return show(document.getElementById('setupMsg'), '没有可恢复的课堂', 'error');
+    if (!raw) return show(document.getElementById('setupMsg'), I18N.t('teacher.noRoom'), 'error');
     const s = JSON.parse(raw);
     enterConsole(s.code, s.teacherToken);
   };
-}
 
-let CODE = '';
-let TOKEN = '';
-let pollTimer = null;
+  I18N.onChange(() => {
+    syncName();
+    renderCaseOptions();
+    paintReveal();
+    if (CODE && document.getElementById('console').style.display !== 'none') refresh();
+  });
+}
 
 async function enterConsole(code, token) {
   CODE = code;
   TOKEN = token;
+  lastReveal = null;
+  lastRevealEn = null;
   document.getElementById('setup').style.display = 'none';
   document.getElementById('console').style.display = 'grid';
   document.getElementById('roomCode').textContent = code;
   bindActions();
   await refresh();
+  if (pollTimer) clearInterval(pollTimer);
   pollTimer = setInterval(refresh, 2500);
 }
 
@@ -81,12 +145,11 @@ function bindActions() {
     }
   };
   document.getElementById('btnReveal').onclick = async () => {
-    if (!confirm('确认统一揭晓？此后不能再开票（单轮）。')) return;
+    if (!confirm(I18N.t('teacher.confirmReveal'))) return;
     try {
       const data = await API.teacherPost(CODE, TOKEN, '/reveal', {});
-      const box = document.getElementById('revealBox');
-      box.style.display = 'block';
-      box.innerHTML = `<strong>${data.revealSummary.headline}</strong><ul>${data.revealSummary.points.map((p) => `<li>${p}</li>`).join('')}</ul>`;
+      rememberReveal(data);
+      paintReveal();
       await refresh();
     } catch (e) {
       toast(e.message, 'error');
@@ -109,41 +172,48 @@ async function refresh() {
   try {
     const data = await API.teacherState(CODE, TOKEN);
     const s = data.state;
-    document.getElementById('caseTitle').textContent = `${s.caseTitle} · 第${s.stage}幕`;
+    rememberReveal(data);
+    const actKey = { 1: 'teacher.act1', 2: 'teacher.act2', 3: 'teacher.act3' }[s.stage];
+    const actLabel = actKey ? I18N.t(actKey) : I18N.t('teacher.act', { n: s.stage });
+    document.getElementById('caseTitle').textContent = `${roomTitle(s)} · ${actLabel}`;
     const vb = document.getElementById('voteBadge');
-    vb.textContent = s.votingOpen ? '投票中' : '未开启/已截止';
+    vb.textContent = s.votingOpen ? I18N.t('teacher.voteOn') : I18N.t('teacher.voteOff');
     vb.className = 'badge ' + (s.votingOpen ? 'ok' : '');
     const rb = document.getElementById('revealBadge');
-    rb.textContent = s.revealed ? '已揭晓' : '未揭晓';
+    rb.textContent = s.revealed ? I18N.t('teacher.revealed') : I18N.t('teacher.notRevealed');
     rb.className = 'badge ' + (s.revealed ? 'ok' : 'wait');
 
     const rows = s.groups
-      .map(
-        (g) => `<tr>
+      .map((g) => {
+        const result = g.result ? I18N.resultLabel(g.result) : s.revealed ? I18N.t('teacher.notSubmitted') : '—';
+        return `<tr>
         <td>${g.id}</td><td>${g.label}</td>
         <td>${g.evidenceCount}</td><td>${g.interviewed}</td>
-        <td>${g.voted ? '已提交' : '—'}</td>
-        <td>${g.result || (s.revealed ? '未提交' : '—')}</td>
-      </tr>`
-      )
+        <td>${g.voted ? I18N.t('teacher.submitted') : '—'}</td>
+        <td>${result}</td>
+      </tr>`;
+      })
       .join('');
     document.getElementById('groupsTable').innerHTML = `
       <table>
-        <thead><tr><th>ID</th><th>名称</th><th>证据</th><th>问询数</th><th>投票</th><th>结果</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="6" class="muted">尚无小组加入</td></tr>'}</tbody>
+        <thead><tr>
+          <th>${I18N.t('teacher.colId')}</th>
+          <th>${I18N.t('teacher.colName')}</th>
+          <th>${I18N.t('teacher.colEv')}</th>
+          <th>${I18N.t('teacher.colIv')}</th>
+          <th>${I18N.t('teacher.colVote')}</th>
+          <th>${I18N.t('teacher.colResult')}</th>
+        </tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" class="muted">${I18N.t('teacher.noGroups')}</td></tr>`}</tbody>
       </table>`;
 
     document.getElementById('hintsList').innerHTML = (s.hints || [])
       .slice()
       .reverse()
-      .map((h) => `<li>${h.text} <span class="muted">(${h.at})</span></li>`)
+      .map((h) => `<li>${I18N.hintText(h.text)} <span class="muted">(${h.at})</span></li>`)
       .join('');
 
-    if (data.revealSummary) {
-      const box = document.getElementById('revealBox');
-      box.style.display = 'block';
-      box.innerHTML = `<strong>${data.revealSummary.headline}</strong><ul>${data.revealSummary.points.map((p) => `<li>${p}</li>`).join('')}</ul>`;
-    }
+    paintReveal();
   } catch (e) {
     toast(e.message, 'error');
     if (e.status === 404 || e.status === 403) {

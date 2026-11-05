@@ -193,6 +193,107 @@ async function flowForCase(caseId, correctId, wrongId) {
   record(`${prefix}-isol`, 'case id matches selection', join.json.case.id === caseId, join.json.case.id);
 }
 
+async function langChecks() {
+  const listZh = await req('GET', '/api/cases');
+  const listEn = await req('GET', '/api/cases?lang=en');
+  const zhPhysics = (listZh.json.cases || []).find((c) => c.id === 'physics');
+  const enPhysics = (listEn.json.cases || []).find((c) => c.id === 'physics');
+  const zhChem = (listZh.json.cases || []).find((c) => c.id === 'chemistry');
+  const enChem = (listEn.json.cases || []).find((c) => c.id === 'chemistry');
+  record('lang-1', 'default case list stays Chinese', zhPhysics && zhPhysics.title === '意外的急刹车' && zhChem && zhChem.title === '台风夜老宅', zhPhysics && zhPhysics.title);
+  record(
+    'lang-2',
+    'lang=en case list is English',
+    enPhysics && enPhysics.title === 'The Unexpected Hard Brake' && enChem && enChem.title === 'The Typhoon-Night Old House' && enPhysics.i18n && enPhysics.i18n.zh && enPhysics.i18n.zh.title === '意外的急刹车',
+    enPhysics && enPhysics.title
+  );
+
+  const created = await req('POST', '/api/teacher/create', { caseId: 'physics', teacherName: 'T' });
+  const code = created.json.code;
+  const teacherToken = created.json.teacherToken;
+  const joinZh = await req('POST', '/api/student/join', { code, groupId: 'LZ', groupLabel: '中文组' });
+  const blob = JSON.stringify(joinZh.json.case);
+  record('lang-3', 'default join case is Chinese and hides the answer', joinZh.json.case.title === '意外的急刹车' && joinZh.json.case.locale === 'zh' && !joinZh.json.case.correctSuspectId && !blob.includes('Answer key') && !blob.includes('标准答案'), joinZh.json.case.title);
+  record('lang-3b', 'join carries English overlay for client switch', !!(joinZh.json.case.i18n && joinZh.json.case.i18n.en && joinZh.json.case.i18n.en.title === 'The Unexpected Hard Brake' && !joinZh.json.case.i18n.en.revealSummary), '');
+
+  const joinEn = await req('POST', '/api/student/join', { code, groupId: 'LE', groupLabel: 'EN' }, { 'x-lang': 'en' });
+  const enCase = joinEn.json.case;
+  const suspectA = (enCase.suspects || []).find((s) => s.id === 'A');
+  const sign = ((enCase.maps || []).find((m) => m.id === 'road') || {}).items;
+  const signName = sign && (sign.find((i) => i.id === 'sign') || {}).name;
+  const e01 = (enCase.evidence || []).find((e) => e.id === 'E01');
+  record(
+    'lang-4',
+    'x-lang en localizes narrative, suspect, map item, evidence',
+    enCase.title === 'The Unexpected Hard Brake' &&
+      enCase.locale === 'en' &&
+      !enCase.correctSuspectId &&
+      suspectA && suspectA.name === 'Lead driver A' && suspectA.sprite === 'luigi' &&
+      signName === 'Speed-limit record' &&
+      e01 && e01.studentText.indexOf('50 km/h') >= 0 &&
+      enCase.i18n && enCase.i18n.zh && enCase.i18n.zh.title === '意外的急刹车' &&
+      !JSON.stringify(enCase).includes('Answer key'),
+    suspectA && suspectA.name
+  );
+  const alpha = (enCase.calcTasks || []).find((t) => t.id === 'alpha');
+  record('lang-4b', 'calc prompt localized, sprite ids unchanged', !!(alpha && alpha.prompt.indexOf('v_A0') >= 0 && alpha.title.indexOf('Alpha') === 0), alpha && alpha.title);
+
+  const createdC = await req('POST', '/api/teacher/create', { caseId: 'chemistry', teacherName: 'T' });
+  const chem = await req('POST', '/api/student/join', { code: createdC.json.code, groupId: 'LC', groupLabel: 'EN' }, { 'x-lang': 'en' });
+  const zhou = (chem.json.case.suspects || []).find((s) => s.id === 'zhou');
+  record(
+    'lang-5',
+    'chemistry English case keeps Chinese ids',
+    chem.json.case.title === 'The Typhoon-Night Old House' && zhou && zhou.name === 'Auntie Zhou' && zhou.sprite === 'daisy' && chem.json.case.voteQuestion.indexOf('bathroom') >= 0,
+    zhou && zhou.name
+  );
+
+  const sid = joinZh.json.case.suspects[0].id;
+  const presetsZh = await req('GET', `/api/student/${code}/interview/${sid}/presets`, null, { 'x-group-token': joinZh.json.groupToken });
+  const presetsEn = await req('GET', `/api/student/${code}/interview/${sid}/presets`, null, { 'x-group-token': joinZh.json.groupToken, 'x-lang': 'en' });
+  record(
+    'lang-6',
+    'mock presets have aligned zh and en questions',
+    presetsZh.json.presets && presetsZh.json.presets[0] && presetsZh.json.label === '演示问答（Mock）' &&
+      presetsEn.json.presets && presetsEn.json.presets[0] && presetsEn.json.presets[0] !== presetsZh.json.presets[0] &&
+      (presetsZh.json.presetsEn || []).length === presetsZh.json.presets.length &&
+      (presetsZh.json.qa || []).length === presetsZh.json.presets.length &&
+      presetsZh.json.qa.every((row) => row.q && row.a && row.qEn && row.aEn),
+    presetsEn.json.presets && presetsEn.json.presets[0]
+  );
+  const asked = await req(
+    'POST',
+    `/api/student/${code}/interview`,
+    { suspectId: sid, question: presetsEn.json.presets[0] },
+    { 'x-group-token': joinZh.json.groupToken, 'x-lang': 'en' }
+  );
+  record(
+    'lang-7',
+    'English question returns English answer and keeps Chinese canonical',
+    asked.status === 200 && asked.json.mode === 'mock' && asked.json.answer && asked.json.answerEn === asked.json.answer && asked.json.answerZh && asked.json.answer !== asked.json.answerZh && !String(asked.json.answer).includes('标准答案'),
+    asked.json.answer
+  );
+
+  const revZh = await req('POST', `/api/teacher/${code}/reveal`, {}, { 'x-teacher-token': teacherToken });
+  record('lang-8', 'default reveal headline stays Chinese', revZh.json.revealSummary && revZh.json.revealSummary.headline.indexOf('标准答案') >= 0 && revZh.json.revealSummaryEn && revZh.json.revealSummaryEn.headline.indexOf('Answer key') >= 0, revZh.json.revealSummary && revZh.json.revealSummary.headline);
+
+  const createdHidden = await req('POST', '/api/teacher/create', { caseId: 'physics', teacherName: 'T' });
+  const joined = await req('POST', '/api/student/join', { code: createdHidden.json.code, groupId: 'G9', groupLabel: 'g9' });
+  const hidden = await req('GET', `/api/student/${createdHidden.json.code}/state`, null, { 'x-group-token': joined.json.groupToken, 'x-lang': 'en' });
+  const hiddenBlob = JSON.stringify(hidden.json);
+  record(
+    'lang-9',
+    'English state before reveal does not include the answer key',
+    hidden.status === 200 && hidden.json.revealSummary == null && hidden.json.progress.result == null && !hiddenBlob.includes('Answer key') && !hiddenBlob.includes('标准答案') && hidden.json.case.title === 'The Unexpected Hard Brake',
+    ''
+  );
+
+  const { packLocale } = require('../public/js/case-locale');
+  const back = packLocale(joinZh.json.case, 'en');
+  const restored = packLocale(Object.assign({}, joinZh.json.case, { locale: 'zh' }), 'zh');
+  record('lang-10', 'client locale helper switches both ways from one pack', back.title === 'The Unexpected Hard Brake' && back.suspects[0].sprite === 'luigi' && restored.title === '意外的急刹车', back.title);
+}
+
 async function main() {
   const server = await new Promise((resolve) => {
     const s = app.listen(PORT, () => resolve(s));
@@ -214,10 +315,21 @@ async function main() {
     record('12c', 'group evidence isolation', (s2.json.progress.evidence || []).length === 0, '');
 
     // Static pages
-    for (const p of ['/', '/teacher.html', '/student.html', '/js/game-engine.js']) {
+    for (const p of ['/', '/teacher.html', '/student.html', '/js/game-engine.js', '/js/i18n.js', '/js/case-locale.js']) {
       const r = await req('GET', p);
-      record('static-' + p, 'serves ' + p, r.status === 200, String(r.status));
+      record('static-' + p, 'serves ' + p, r.status === 200 && !String(r.raw).includes('"error"'), String(r.status));
     }
+    const home = await req('GET', '/');
+    const teacherPage = await req('GET', '/teacher.html');
+    const studentPage = await req('GET', '/student.html');
+    record(
+      'lang-ui',
+      'language toggle on home, teacher, student',
+      [home, teacherPage, studentPage].every((r) => r.raw.includes('id="langSwitch"') && r.raw.includes('data-set-lang="en"') && r.raw.includes('/js/i18n.js')),
+      ''
+    );
+
+    await langChecks();
   } finally {
     server.close();
   }
@@ -241,6 +353,7 @@ async function main() {
     '- [ ] WASD movement, collision with walls, door transitions (physics road↔hq, chemistry rooms)',
     '- [ ] Panel open blocks movement keys; close restores',
     '- [ ] Touch pad on coarse pointer',
+    '- [ ] 中文 | EN toggle on home, teacher, and student; choice survives refresh',
     '- [ ] UI label 演示问答（Mock） visible during interview',
     '- [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal',
     '- [ ] No UI for second round / eliminate / bonus clues',
