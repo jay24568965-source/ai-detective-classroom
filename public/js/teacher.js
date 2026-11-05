@@ -6,6 +6,7 @@ let TOKEN = '';
 let pollTimer = null;
 let lastReveal = null;
 let lastRevealEn = null;
+let lastRevealTw = null;
 
 function show(el, text, cls) {
   el.style.display = 'block';
@@ -14,9 +15,10 @@ function show(el, text, cls) {
 }
 
 function caseLabel(c) {
-  const en = c.i18n && c.i18n.en;
-  if (I18N.getLang() === 'en' && en && en.title) return `${en.subject || c.subject} · ${en.title}`;
-  const zh = (c.locale === 'en' && c.i18n && c.i18n.zh) || c;
+  const lang = I18N.getLang();
+  const bag = lang !== 'zh' && c.i18n && c.i18n[lang];
+  if (bag && bag.title) return `${bag.subject || c.subject} · ${bag.title}`;
+  const zh = (c.locale && c.locale !== 'zh' && c.i18n && c.i18n.zh) || c;
   return `${zh.subject} · ${zh.title}`;
 }
 
@@ -28,13 +30,16 @@ function renderCaseOptions() {
 }
 
 function roomTitle(s) {
-  if (I18N.getLang() === 'en' && s.caseTitleEn) return s.caseTitleEn;
+  const lang = I18N.getLang();
+  if (lang === 'en' && s.caseTitleEn) return s.caseTitleEn;
+  if (lang === 'zh-TW' && s.caseTitleTw) return s.caseTitleTw;
   return s.caseTitle;
 }
 
 function paintReveal() {
   const box = document.getElementById('revealBox');
-  const sum = I18N.getLang() === 'en' && lastRevealEn ? lastRevealEn : lastReveal;
+  const lang = I18N.getLang();
+  const sum = lang === 'en' && lastRevealEn ? lastRevealEn : lang === 'zh-TW' && lastRevealTw ? lastRevealTw : lastReveal;
   if (!sum) {
     box.style.display = 'none';
     return;
@@ -45,13 +50,12 @@ function paintReveal() {
 
 function rememberReveal(data) {
   if (!data) return;
-  if (data.revealSummaryZh) {
-    lastReveal = data.revealSummaryZh;
-    lastRevealEn = data.revealSummaryEn || data.revealSummary;
-  } else if (data.revealSummary) {
-    lastReveal = data.revealSummary;
-    lastRevealEn = data.revealSummaryEn || null;
-  }
+  if (data.revealSummary == null && data.revealSummaryEn == null && data.revealSummaryTw == null) return;
+  if (data.revealSummaryZh) lastReveal = data.revealSummaryZh;
+  else if (data.revealSummary && I18N.getLang() === 'zh') lastReveal = data.revealSummary;
+  else if (!lastReveal && data.revealSummary) lastReveal = data.revealSummary;
+  if (data.revealSummaryEn) lastRevealEn = data.revealSummaryEn;
+  if (data.revealSummaryTw) lastRevealTw = data.revealSummaryTw;
 }
 
 async function init() {
@@ -61,7 +65,8 @@ async function init() {
   });
   const syncName = () => {
     if (nameInput.dataset.edited === '1') return;
-    nameInput.value = I18N.getLang() === 'en' ? 'Teacher' : '教师';
+    const langNow = I18N.getLang();
+    nameInput.value = langNow === 'en' ? 'Teacher' : langNow === 'zh-TW' ? '教師' : '教师';
   };
   syncName();
 
@@ -99,6 +104,7 @@ async function enterConsole(code, token) {
   TOKEN = token;
   lastReveal = null;
   lastRevealEn = null;
+  lastRevealTw = null;
   document.getElementById('setup').style.display = 'none';
   document.getElementById('console').style.display = 'grid';
   document.getElementById('roomCode').textContent = code;

@@ -7,7 +7,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { randomBytes } = require('crypto');
-const { apply: applyCaseLocale } = require('./public/js/case-locale');
+const { apply: applyCaseLocale, normalizeLang } = require('./public/js/case-locale');
 
 const app = express();
 const PORT = process.env.PORT || 3080;
@@ -26,19 +26,20 @@ function loadCaseRaw(caseId) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-/** zh by default. Only an explicit ?lang= or x-lang header selects English. */
+/** zh by default. ?lang= or x-lang selects en or zh-TW. Old zh/en values still work. */
 function requestedLang(req) {
-  const q = String((req && req.query && req.query.lang) || '').toLowerCase();
-  const h = String((req && req.get && req.get('x-lang')) || '').toLowerCase();
-  if (q === 'en' || h === 'en') return 'en';
-  return 'zh';
+  const q = String((req && req.query && req.query.lang) || '').trim();
+  const h = String((req && req.get && req.get('x-lang')) || '').trim();
+  const raw = q || h;
+  if (!raw) return 'zh';
+  return normalizeLang(raw);
 }
 
-/** Student-safe English overlay. Reveal text is attached only after the teacher reveals. */
-function studentEnOverlay(raw) {
-  const en = raw && raw.i18n && raw.i18n.en;
-  if (!en) return null;
-  const copy = JSON.parse(JSON.stringify(en));
+/** Student-safe overlay. Reveal text is attached only after the teacher reveals. */
+function studentOverlay(raw, langKey) {
+  const bag = raw && raw.i18n && raw.i18n[langKey];
+  if (!bag) return null;
+  const copy = JSON.parse(JSON.stringify(bag));
   delete copy.revealSummary;
   // Answers stay on the interview route. The public case only needs names and narrative.
   if (copy.suspects) {
@@ -52,10 +53,14 @@ function studentEnOverlay(raw) {
 function revealPair(raw, lang) {
   const zh = raw.revealSummary || null;
   const en = (raw.i18n && raw.i18n.en && raw.i18n.en.revealSummary) || null;
-  if (lang === 'en' && en) {
-    return { revealSummary: en, revealSummaryZh: zh, revealSummaryEn: en };
-  }
-  return { revealSummary: zh, revealSummaryEn: en };
+  const tw = (raw.i18n && raw.i18n['zh-TW'] && raw.i18n['zh-TW'].revealSummary) || null;
+  const chosen = lang === 'en' && en ? en : lang === 'zh-TW' && tw ? tw : zh;
+  return {
+    revealSummary: chosen,
+    revealSummaryZh: zh,
+    revealSummaryEn: en,
+    revealSummaryTw: tw,
+  };
 }
 
 /** Strip teacher-only / answer fields for student clients */
@@ -105,16 +110,19 @@ function publicCaseView(raw, stage, lang) {
     evidenceCatalogIds: (raw.evidence || []).map((e) => e.id),
   };
 
-  const en = studentEnOverlay(raw);
+  const en = studentOverlay(raw, 'en');
+  const tw = studentOverlay(raw, 'zh-TW');
   const zhSnap = JSON.parse(JSON.stringify(view));
-  if (lang !== 'en' || !en) {
+  const packI18n = { en, 'zh-TW': tw };
+  const overlay = lang === 'en' ? en : lang === 'zh-TW' ? tw : null;
+  if (!overlay) {
     zhSnap.locale = 'zh';
-    zhSnap.i18n = { en };
+    zhSnap.i18n = packI18n;
     return zhSnap;
   }
-  const localized = applyCaseLocale(zhSnap, en);
-  localized.locale = 'en';
-  localized.i18n = { en, zh: zhSnap };
+  const localized = applyCaseLocale(zhSnap, overlay);
+  localized.locale = lang;
+  localized.i18n = Object.assign({}, packI18n, { zh: zhSnap });
   return localized;
 }
 
@@ -140,6 +148,7 @@ function publicRoomState(room) {
     caseId: room.caseId,
     caseTitle: room.caseTitle,
     caseTitleEn: room.caseTitleEn || null,
+    caseTitleTw: room.caseTitleTw || null,
     stage: room.stage,
     votingOpen: room.votingOpen,
     revealed: room.revealed,
@@ -182,6 +191,7 @@ app.get('/api/cases', (req, res) => {
       const raw = loadCaseRaw(id);
       if (!raw) return null;
       const en = raw.i18n && raw.i18n.en;
+      const tw = raw.i18n && raw.i18n['zh-TW'];
       const zh = { title: raw.title, subject: raw.subject, durationHint: raw.durationHint };
       const item = {
         id: raw.id,
@@ -190,13 +200,15 @@ app.get('/api/cases', (req, res) => {
         durationHint: raw.durationHint,
         i18n: {
           en: en ? { title: en.title, subject: en.subject, durationHint: en.durationHint } : null,
+          'zh-TW': tw ? { title: tw.title, subject: tw.subject, durationHint: tw.durationHint } : null,
         },
       };
-      if (lang === 'en' && en) {
-        item.title = en.title;
-        item.subject = en.subject;
-        item.durationHint = en.durationHint;
-        item.locale = 'en';
+      const overlay = lang === 'en' ? en : lang === 'zh-TW' ? tw : null;
+      if (overlay) {
+        item.title = overlay.title;
+        item.subject = overlay.subject;
+        item.durationHint = overlay.durationHint;
+        item.locale = lang;
         item.i18n.zh = zh;
       }
       return item;
@@ -222,6 +234,7 @@ app.post('/api/teacher/create', (req, res) => {
     caseId: raw.id,
     caseTitle: raw.title,
     caseTitleEn: (raw.i18n && raw.i18n.en && raw.i18n.en.title) || null,
+    caseTitleTw: (raw.i18n && raw.i18n['zh-TW'] && raw.i18n['zh-TW'].title) || null,
     stage: 1,
     votingOpen: false,
     revealed: false,
@@ -238,6 +251,7 @@ app.post('/api/teacher/create', (req, res) => {
     caseId: raw.id,
     caseTitle: raw.title,
     caseTitleEn: room.caseTitleEn,
+    caseTitleTw: room.caseTitleTw,
     state: publicRoomState(room),
   });
 });
@@ -266,6 +280,7 @@ app.get('/api/teacher/:code/state', (req, res) => {
     revealSummary: revealedPack ? revealedPack.revealSummary : null,
     revealSummaryEn: revealedPack ? revealedPack.revealSummaryEn : null,
     revealSummaryZh: revealedPack ? revealedPack.revealSummaryZh || null : null,
+    revealSummaryTw: revealedPack ? revealedPack.revealSummaryTw || null : null,
     correctSuspectId: room.revealed ? room.correctSuspectId : null,
     groupsDetail: Object.values(room.groups).map((g) => ({
       id: g.id,
@@ -347,6 +362,7 @@ app.post('/api/teacher/:code/reveal', (req, res) => {
     revealSummary: pack.revealSummary,
     revealSummaryEn: pack.revealSummaryEn,
     revealSummaryZh: pack.revealSummaryZh || null,
+    revealSummaryTw: pack.revealSummaryTw || null,
   });
 });
 
@@ -508,6 +524,7 @@ app.get('/api/student/:code/state', (req, res) => {
     revealSummary: revealedPack ? revealedPack.revealSummary : null,
     revealSummaryEn: revealedPack ? revealedPack.revealSummaryEn : null,
     revealSummaryZh: revealedPack ? revealedPack.revealSummaryZh || null : null,
+    revealSummaryTw: revealedPack ? revealedPack.revealSummaryTw || null : null,
   });
 });
 
@@ -561,15 +578,15 @@ app.post('/api/student/:code/investigate', (req, res) => {
   }
 
   const lang = requestedLang(req);
-  const en = lang === 'en' ? studentEnOverlay(raw) : null;
+  const overlay = lang === 'en' || lang === 'zh-TW' ? studentOverlay(raw, lang) : null;
   let itemName = foundItem.name;
   let gainedOut = gained;
-  if (en) {
+  if (overlay) {
     const mapHit = (raw.maps || []).find((m) => (m.items || []).some((i) => i.id === itemId));
-    const translated = mapHit && en.maps && en.maps[mapHit.id] && en.maps[mapHit.id].items && en.maps[mapHit.id].items[itemId];
+    const translated = mapHit && overlay.maps && overlay.maps[mapHit.id] && overlay.maps[mapHit.id].items && overlay.maps[mapHit.id].items[itemId];
     if (translated) itemName = translated;
     gainedOut = gained.map((card) => {
-      const t = en.evidence && en.evidence[card.id];
+      const t = overlay.evidence && overlay.evidence[card.id];
       if (!t) return card;
       return Object.assign({}, card, {
         name: t.name || card.name,
@@ -616,13 +633,21 @@ app.post('/api/student/:code/ready', (req, res) => {
   res.json({ progress: sanitizeProgress(g, room), state: publicRoomState(room) });
 });
 
-function enMockQA(raw, suspectId) {
-  const bag = raw.i18n && raw.i18n.en && raw.i18n.en.suspects && raw.i18n.en.suspects[suspectId];
-  return (bag && bag.mockQA) || [];
+function suspectLocale(raw, langKey, suspectId) {
+  const bag = raw.i18n && raw.i18n[langKey] && raw.i18n[langKey].suspects && raw.i18n[langKey].suspects[suspectId];
+  return bag || null;
 }
 
-/** Chinese match keeps the original rules. English is used only when Chinese does not hit. */
-function matchMockQA(qa, enList, question) {
+function matchAltList(list, question) {
+  if (!question || !list || !list.length) return -1;
+  const exact = list.findIndex((pair) => pair && pair.q === question);
+  if (exact >= 0) return exact;
+  const pref = list.findIndex((pair) => pair && pair.q && question.includes(pair.q.slice(0, 6)));
+  return pref;
+}
+
+/** Simplified Chinese match keeps the original rules. English, then Traditional, are fallbacks. */
+function matchMockQA(qa, enList, question, twList) {
   const list = qa || [];
   const en = enList || [];
   if (!list.length) return -1;
@@ -654,15 +679,76 @@ function matchMockQA(qa, enList, question) {
       }
     });
     if (best >= 0) return best;
+    const twHit = matchAltList(twList, question);
+    if (twHit >= 0) return twHit;
   }
   return 0;
 }
 
-function interviewPayload(raw, suspect, lang) {
+function interviewPayload(raw, suspect) {
   const qa = suspect.mockQA || [];
-  const enList = enMockQA(raw, suspect.id);
-  const enName = raw.i18n && raw.i18n.en && raw.i18n.en.suspects && raw.i18n.en.suspects[suspect.id];
-  return { qa, enList, enName: enName || {}, lang };
+  const enBag = suspectLocale(raw, 'en', suspect.id);
+  const twBag = suspectLocale(raw, 'zh-TW', suspect.id);
+  return {
+    qa,
+    enList: (enBag && enBag.mockQA) || [],
+    twList: (twBag && twBag.mockQA) || [],
+    enName: enBag || {},
+    twName: twBag || {},
+  };
+}
+
+function interviewView(lang, suspect, qa, enList, twList, enName, twName, idx, question) {
+  const pair = idx >= 0 && qa[idx] ? qa[idx] : null;
+  const enPair = idx >= 0 && enList[idx] ? enList[idx] : null;
+  const twPair = idx >= 0 && twList[idx] ? twList[idx] : null;
+  const questionZh = pair ? pair.q : question;
+  const answerZh = pair ? pair.a : '……（对方没有更多可说的了）';
+  const questionEn = enPair && enPair.q ? enPair.q : null;
+  const answerEn = enPair && enPair.a ? enPair.a : null;
+  const questionTw = twPair && twPair.q ? twPair.q : null;
+  const answerTw = twPair && twPair.a ? twPair.a : null;
+  const useEn = lang === 'en';
+  const useTw = lang === 'zh-TW';
+  let label = '演示问答（Mock）';
+  let suspectName = suspect.name;
+  let presets = qa.map((p) => p.q);
+  let questionOut = questionZh;
+  let answerOut = answerZh;
+  if (useEn) {
+    label = 'Demo Q&A (Mock)';
+    if (enName.name) suspectName = enName.name;
+    if (enList.length) presets = enList.map((p) => p.q);
+    if (questionEn) questionOut = questionEn;
+    if (answerEn) answerOut = answerEn;
+  } else if (useTw) {
+    label = '示範問答（Mock）';
+    if (twName.name) suspectName = twName.name;
+    if (twList.length) presets = twList.map((p) => p.q);
+    if (questionTw) questionOut = questionTw;
+    if (answerTw) answerOut = answerTw;
+  }
+  return {
+    label,
+    suspectName,
+    presets,
+    questionOut,
+    answerOut,
+    questionZh,
+    answerZh,
+    questionEn,
+    answerEn,
+    questionTw,
+    answerTw,
+    qaRows: qa.map((p, i) => ({
+      q: p.q,
+      a: p.a,
+      qEn: enList[i] && enList[i].q,
+      aEn: enList[i] && enList[i].a,
+      qTw: twList[i] && twList[i].q,
+      aTw: twList[i] && twList[i].a,
+    })),
+  };
 }
 
 /** Mock interview — preset Q&A only; structured for future Convai adapter */
@@ -679,40 +765,33 @@ app.post('/api/student/:code/interview', (req, res) => {
   if (!g.interviewed.includes(suspectId)) g.interviewed.push(suspectId);
 
   const lang = requestedLang(req);
-  const { qa, enList, enName } = interviewPayload(raw, suspect, lang);
-  const idx = matchMockQA(qa, enList, question);
-  const pair = idx >= 0 && qa[idx] ? qa[idx] : null;
-  const enPair = idx >= 0 && enList[idx] ? enList[idx] : null;
-  const answerZh = pair ? pair.a : '……（对方没有更多可说的了）';
-  const questionZh = pair ? pair.q : question;
-  const answerEn = enPair && enPair.a ? enPair.a : null;
-  const questionEn = enPair && enPair.q ? enPair.q : null;
+  const { qa, enList, twList, enName, twName } = interviewPayload(raw, suspect);
+  const idx = matchMockQA(qa, enList, question, twList);
+  const view = interviewView(lang, suspect, qa, enList, twList, enName, twName, idx, question);
 
   // Preset answers are author-controlled and must not include the reveal headline.
-  g.logs.push({ at: nowIso(), type: 'interview', suspectId, question: questionZh || question });
-  const useEn = lang === 'en';
+  g.logs.push({ at: nowIso(), type: 'interview', suspectId, question: view.questionZh || question });
   res.json({
     mode: 'mock',
-    label: useEn ? 'Demo Q&A (Mock)' : '演示问答（Mock）',
+    label: view.label,
     labelEn: 'Demo Q&A (Mock)',
+    labelTw: '示範問答（Mock）',
     suspectId,
-    suspectName: useEn && enName.name ? enName.name : suspect.name,
+    suspectName: view.suspectName,
     suspectNameZh: suspect.name,
-    presets: useEn && enList.length ? enList.map((p) => p.q) : qa.map((p) => p.q),
+    presets: view.presets,
     presetsZh: qa.map((p) => p.q),
     presetsEn: enList.map((p) => p && p.q).filter(Boolean),
-    qa: qa.map((p, i) => ({
-      q: p.q,
-      a: p.a,
-      qEn: enList[i] && enList[i].q,
-      aEn: enList[i] && enList[i].a,
-    })),
-    question: useEn && questionEn ? questionEn : questionZh,
-    questionZh,
-    questionEn,
-    answer: useEn && answerEn ? answerEn : answerZh,
-    answerZh,
-    answerEn,
+    presetsTw: twList.map((p) => p && p.q).filter(Boolean),
+    qa: view.qaRows,
+    question: view.questionOut,
+    questionZh: view.questionZh,
+    questionEn: view.questionEn,
+    questionTw: view.questionTw,
+    answer: view.answerOut,
+    answerZh: view.answerZh,
+    answerEn: view.answerEn,
+    answerTw: view.answerTw,
     adapter: { provider: 'mock', convaiReady: false },
     progress: sanitizeProgress(g, room),
   });
@@ -726,21 +805,18 @@ app.get('/api/student/:code/interview/:suspectId/presets', (req, res) => {
   const suspect = (raw.suspects || []).find((s) => s.id === req.params.suspectId);
   if (!suspect) return res.status(404).json({ error: '人物不存在' });
   const lang = requestedLang(req);
-  const { qa, enList } = interviewPayload(raw, suspect, lang);
-  const useEn = lang === 'en' && enList.length;
+  const { qa, enList, twList, enName, twName } = interviewPayload(raw, suspect);
+  const view = interviewView(lang, suspect, qa, enList, twList, enName, twName, -1, '');
   res.json({
     mode: 'mock',
-    label: useEn ? 'Demo Q&A (Mock)' : '演示问答（Mock）',
+    label: view.label,
     labelEn: 'Demo Q&A (Mock)',
-    presets: useEn ? enList.map((p) => p.q) : qa.map((p) => p.q),
+    labelTw: '示範問答（Mock）',
+    presets: view.presets,
     presetsZh: qa.map((p) => p.q),
     presetsEn: enList.map((p) => p && p.q).filter(Boolean),
-    qa: qa.map((p, i) => ({
-      q: p.q,
-      a: p.a,
-      qEn: enList[i] && enList[i].q,
-      aEn: enList[i] && enList[i].a,
-    })),
+    presetsTw: twList.map((p) => p && p.q).filter(Boolean),
+    qa: view.qaRows,
     adapter: { provider: 'mock', convaiReady: false },
   });
 });

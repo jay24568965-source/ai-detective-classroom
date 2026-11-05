@@ -1,13 +1,21 @@
 # TEST_RESULTS
 
-Generated: 2026-11-05T08:57:50.803Z (script clock; report to user in Asia/Shanghai).
+Generated: 2026-11-05T11:17:43.848Z (script clock; report to user in Asia/Shanghai).
 
-Automated: 70/70 passed.
+Automated: 87/87 passed.
 
 | ID | Result | Name | Detail |
 |----|--------|------|--------|
+| move-1 | PASS | keyboard no longer moves the detective | 50 |
+| move-2 | PASS | floor click sets a walk target | {"x":220,"y":80} |
+| move-3 | PASS | detective walks toward the clicked floor point | 220 |
+| move-4 | PASS | walk stops at a wall instead of passing through | x=50 y=158 |
+| move-5 | PASS | clicking a clue already in range opens it immediately | item |
+| move-6 | PASS | clicking a distant clue starts a walk toward it | clue |
+| move-7 | PASS | walking up to a clue then opens it | item |
+| move-8 | PASS | clicking the host in range opens the host | host |
 | 0 | PASS | health |  |
-| physics-1a | PASS | create room physics | E7A797 |
+| physics-1a | PASS | create room physics | 40B3C9 |
 | physics-1b | PASS | student join |  |
 | physics-9a | PASS | student case omits correctSuspectId |  |
 | physics-title | PASS | case title loaded | 意外的急刹车 |
@@ -32,7 +40,7 @@ Automated: 70/70 passed.
 | physics-12b | PASS | teacher auth required |  |
 | physics-stage | PASS | E07 locked until stage 2 | early=false late=true |
 | physics-isol | PASS | case id matches selection | physics |
-| chemistry-1a | PASS | create room chemistry | BB283B |
+| chemistry-1a | PASS | create room chemistry | D87DA6 |
 | chemistry-1b | PASS | student join |  |
 | chemistry-9a | PASS | student case omits correctSuspectId |  |
 | chemistry-title | PASS | case title loaded | 台风夜老宅 |
@@ -76,13 +84,22 @@ Automated: 70/70 passed.
 | lang-8 | PASS | default reveal headline stays Chinese | 标准答案：前车司机A |
 | lang-9 | PASS | English state before reveal does not include the answer key |  |
 | lang-10 | PASS | client locale helper switches both ways from one pack | The Unexpected Hard Brake |
+| lang-11 | PASS | lang=zh-TW case list is Traditional and keeps simplified alongside | 意外的急煞車 |
+| lang-12 | PASS | x-lang zh-TW localizes physics narrative, suspect, item, evidence | 前車司機A |
+| lang-12b | PASS | default join carries a Traditional overlay for client switching |  |
+| lang-13 | PASS | client helper switches among zh, zh-TW, and en | 意外的急煞車 |
+| lang-14 | PASS | x-lang zh-tw header matches ?lang=zh-TW | 意外的急煞車 |
+| lang-15 | PASS | chemistry Traditional keeps ids and the surname 余 | 周姨 |
+| lang-16 | PASS | Traditional mock presets differ from simplified and stay aligned | 事故前你的車速大約多少？ |
+| lang-17 | PASS | Traditional question returns a Traditional answer and keeps simplified canonical | 我記得制動前沒有超過限速50。當時路況還可以。 |
+| lang-18 | PASS | reveal honors zh-TW and still returns simplified and English | 標準答案：前車司機A |
 
 ## Manual checks (not claimed automated)
 
-- [ ] WASD movement, collision with walls, door transitions (physics road↔hq, chemistry rooms)
-- [ ] Panel open blocks movement keys; close restores
-- [ ] Touch pad on coarse pointer
-- [ ] 中文 | EN toggle on home, teacher, and student; choice survives refresh
+- [ ] Click or tap the floor to walk; click a clue, person, or door to approach and interact (physics road↔hq, chemistry rooms)
+- [ ] Opening a panel cancels the walk; closing it allows clicks again
+- [ ] Tap the scene on a phone-width viewport (no WASD, no D-pad)
+- [ ] 简体 | 繁體 | EN on home, teacher, and student; choice survives refresh (ai-detective-lang)
 - [ ] UI label 演示问答（Mock） visible during interview
 - [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal
 - [ ] No UI for second round / eliminate / bonus clues

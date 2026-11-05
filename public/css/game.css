@@ -11,7 +11,7 @@
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
   align-items: center;
-  padding: 0.5rem 7.2rem 0.5rem 0.75rem;
+  padding: 0.5rem 12.5rem 0.5rem 0.75rem;
   background: #020617;
   border-bottom: 1px solid var(--border);
 }
@@ -25,12 +25,15 @@
   justify-content: center;
 }
 #gameCanvas {
-  background: #111827;
-  image-rendering: pixelated;
+  background: #0b1020;
+  image-rendering: auto;
   max-width: 100%;
   max-height: calc(100vh - 56px);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  touch-action: none;
 }
 .side {
   background: var(--panel);
@@ -79,28 +82,6 @@
   border-radius: 8px;
   pointer-events: none;
   display: none;
-}
-.touch-pad {
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
-  display: none;
-  grid-template-columns: 48px 48px 48px;
-  grid-template-rows: 48px 48px 48px;
-  gap: 4px;
-}
-.touch-pad button {
-  width: 48px; height: 48px; padding: 0;
-  background: rgba(51, 65, 85, 0.85);
-  color: #fff;
-}
-.touch-pad .interact { grid-column: 2; grid-row: 2; background: rgba(56, 189, 248, 0.85); color: #0f172a; }
-.touch-pad .up { grid-column: 2; grid-row: 1; }
-.touch-pad .left { grid-column: 1; grid-row: 2; }
-.touch-pad .right { grid-column: 3; grid-row: 2; }
-.touch-pad .down { grid-column: 2; grid-row: 3; }
-@media (pointer: coarse) {
-  .touch-pad { display: grid; }
 }
 .teacher-layout {
   display: grid;

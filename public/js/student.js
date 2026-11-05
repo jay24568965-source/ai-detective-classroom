@@ -127,7 +127,6 @@ function boot(data) {
   engine.start();
 
   bindUI();
-  bindTouch();
   renderSide();
   updateTask();
   if (posTimer) clearInterval(posTimer);
@@ -145,21 +144,6 @@ function applyGameChrome() {
   renderBrief();
   renderSide();
   updateTask();
-}
-
-function bindTouch() {
-  const pad = $('touchPad');
-  pad.querySelectorAll('[data-dx]').forEach((btn) => {
-    const set = (on) => {
-      if (!engine) return;
-      engine.touchDir.x = on ? Number(btn.dataset.dx) : 0;
-      engine.touchDir.y = on ? Number(btn.dataset.dy) : 0;
-    };
-    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); set(true); });
-    btn.addEventListener('pointerup', () => set(false));
-    btn.addEventListener('pointerleave', () => set(false));
-  });
-  $('btnTouchE').onclick = () => engine && engine.tryInteract();
 }
 
 function bindUI() {
@@ -396,10 +380,16 @@ function renderHost() {
 }
 
 function qaText(pair, which) {
-  const enKey = which === 'q' ? 'qEn' : 'aEn';
-  const zhKey = which === 'q' ? 'q' : 'a';
-  if (I18N.getLang() === 'en' && pair[enKey]) return pair[enKey];
-  return pair[zhKey] || '';
+  const lang = I18N.getLang();
+  if (lang === 'en') {
+    const enKey = which === 'q' ? 'qEn' : 'aEn';
+    if (pair[enKey]) return pair[enKey];
+  }
+  if (lang === 'zh-TW') {
+    const twKey = which === 'q' ? 'qTw' : 'aTw';
+    if (pair[twKey]) return pair[twKey];
+  }
+  return pair[which === 'q' ? 'q' : 'a'] || '';
 }
 
 function renderChat() {
@@ -452,6 +442,8 @@ async function ask(question) {
       a: data.answerZh || data.answer,
       qEn: data.questionEn,
       aEn: data.answerEn,
+      qTw: data.questionTw,
+      aTw: data.answerTw,
     });
     renderChat();
   } catch (e) {
@@ -523,17 +515,21 @@ async function submitVote() {
 }
 
 function captureReveal(data) {
-  if (!data || (!data.revealSummary && !data.revealSummaryEn)) return;
-  if (data.revealSummaryZh) {
-    LAST_REVEAL = { zh: data.revealSummaryZh, en: data.revealSummaryEn || data.revealSummary };
-  } else if (data.revealSummary) {
-    LAST_REVEAL = { zh: data.revealSummary, en: data.revealSummaryEn || LAST_REVEAL && LAST_REVEAL.en };
-  }
+  if (!data || (data.revealSummary == null && data.revealSummaryEn == null && data.revealSummaryTw == null)) return;
+  const prev = LAST_REVEAL || {};
+  LAST_REVEAL = {
+    zh: data.revealSummaryZh || prev.zh || data.revealSummary,
+    en: data.revealSummaryEn || prev.en || null,
+    tw: data.revealSummaryTw || prev.tw || null,
+  };
+  if (data.revealSummaryZh) LAST_REVEAL.zh = data.revealSummaryZh;
 }
 
 function revealSummaryNow() {
   if (!LAST_REVEAL) return null;
-  if (I18N.getLang() === 'en' && LAST_REVEAL.en) return LAST_REVEAL.en;
+  const lang = I18N.getLang();
+  if (lang === 'en' && LAST_REVEAL.en) return LAST_REVEAL.en;
+  if (lang === 'zh-TW' && LAST_REVEAL.tw) return LAST_REVEAL.tw;
   return LAST_REVEAL.zh;
 }
 
