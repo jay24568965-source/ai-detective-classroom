@@ -1,5 +1,5 @@
 /**
- * UI language: zh (default) or en.
+ * UI language: zh (simplified, default), zh-TW (Traditional), or en.
  * Preference is stored in localStorage under ai-detective-lang and shared
  * by the home, teacher, and student pages on this device.
  */
@@ -79,7 +79,7 @@
       'student.evidenceTitle': '证据板',
       'student.interviewed': '已问询',
       'student.hints': '教师提示',
-      'student.help': 'WASD / 方向键移动 · E 互动 · 打开面板时停止移动',
+      'student.help': '点击地面移动 · 点击线索、人物或门互动 · 打开面板时暂停移动',
       'student.taskExplore': '探索场景、收集证据、问询人物、完成科学分析',
       'student.taskVote': '返回主持人处，提交唯一一次最终投票',
       'student.taskWaiting': '已提交，等待揭晓',
@@ -100,7 +100,7 @@
       'item.none': '未取得新证据（可能已收集，或尚未解锁该幕）。',
       'evidence.title': '证据板',
       'evidence.close': '关闭',
-      'evidence.empty': '尚无证据。靠近发光物品按 E 调查。',
+      'evidence.empty': '尚无证据。点击发光的线索进行调查。',
       'evidence.source': '来源：',
       'evidence.none': '尚无证据',
       'notes.title': '推理笔记',
@@ -138,9 +138,10 @@
       'side.noneIv': '尚未问询',
       'side.noneHint': '暂无',
       'badge.mock': '演示问答（Mock）',
-      'prompt.investigate': '按 E 调查：{name}',
-      'prompt.talk': '按 E 交谈：{name}',
-      'prompt.door': '按 E {label}',
+      'prompt.investigate': '点击调查：{name}',
+      'prompt.talk': '点击交谈：{name}',
+      'prompt.door': '点击{label}',
+      'prompt.walking': '前往：{name}',
       'prompt.enter': '进入',
       'scene.door': '门',
       'scene.player': '马里奥',
@@ -222,7 +223,7 @@
       'student.evidenceTitle': 'Evidence',
       'student.interviewed': 'Interviewed',
       'student.hints': 'Teacher hints',
-      'student.help': 'WASD / arrow keys to move · E to interact · opening a panel stops movement',
+      'student.help': 'Click or tap the floor to walk · click a clue, person, or door · opening a panel pauses movement',
       'student.taskExplore': 'Explore, collect evidence, question people, and finish the science analysis',
       'student.taskVote': 'Return to the host and submit the one final vote',
       'student.taskWaiting': 'Submitted. Waiting for the reveal.',
@@ -243,7 +244,7 @@
       'item.none': 'No new evidence (already collected, or this act is still locked).',
       'evidence.title': 'Evidence board',
       'evidence.close': 'Close',
-      'evidence.empty': 'No evidence yet. Walk up to a glowing item and press E.',
+      'evidence.empty': 'No evidence yet. Click a glowing clue to investigate.',
       'evidence.source': 'Source: ',
       'evidence.none': 'No evidence yet',
       'notes.title': 'Reasoning notes',
@@ -281,9 +282,10 @@
       'side.noneIv': 'No interviews yet',
       'side.noneHint': 'None yet',
       'badge.mock': 'Demo Q&A (Mock)',
-      'prompt.investigate': 'Press E to investigate: {name}',
-      'prompt.talk': 'Press E to talk: {name}',
-      'prompt.door': 'Press E {label}',
+      'prompt.investigate': 'Click to investigate: {name}',
+      'prompt.talk': 'Click to talk: {name}',
+      'prompt.door': 'Click {label}',
+      'prompt.walking': 'Walking to: {name}',
       'prompt.enter': 'Enter',
       'scene.door': 'Door',
       'scene.player': 'Mario',
@@ -292,6 +294,150 @@
       'hint.stage': 'The teacher moved the investigation to Act {n}.',
       'api.fail': 'Request failed',
       'lang.aria': 'Language',
+    },
+    'zh-TW': {
+      'home.title': 'AI偵探課堂',
+      'home.subtitle': 'INT6066 小組專案 MVP · 單輪投票 · Mock 問詢 · 物理／化學雙案件',
+      'home.teacherTitle': '教師控制台',
+      'home.teacherBody': '建立課堂、選擇案件、開啟／關閉投票、揭曉結果、匯出學習紀錄。',
+      'home.teacherBtn': '進入教師端',
+      'home.studentTitle': '學生／小組',
+      'home.studentBody': '用課堂碼與小組 ID 加入，共同操控偵探角色完成調查與最終指認。',
+      'home.studentBtn': '進入學生端',
+      'home.footer': '示範問答（Mock）無需 API Key · 教師答案保存在伺服器 · 不提供多輪投票／排除／補發線索',
+      'teacher.docTitle': '教師控制台 · AI偵探課堂',
+      'teacher.heading': '教師控制台',
+      'teacher.lead': '建立新課堂或恢復已有課堂（本機 localStorage）。',
+      'teacher.name': '顯示名稱',
+      'teacher.case': '選擇案件',
+      'teacher.create': '建立課堂',
+      'teacher.restore': '恢復上次',
+      'teacher.home': '返回首頁',
+      'teacher.room': '課堂',
+      'teacher.voteLabel': '投票：',
+      'teacher.revealLabel': '揭曉：',
+      'teacher.stage': '調查階段',
+      'teacher.act1': '第一幕',
+      'teacher.act2': '第二幕',
+      'teacher.act3': '第三幕',
+      'teacher.hintLabel': '發布提示',
+      'teacher.hintPh': '教學提示（與投票結果無關）',
+      'teacher.sendHint': '送出提示',
+      'teacher.openVote': '開啟最終投票',
+      'teacher.closeVote': '關閉投票',
+      'teacher.reveal': '統一揭曉',
+      'teacher.pause': '暫停／繼續調查',
+      'teacher.exportJson': '匯出 JSON 日誌',
+      'teacher.exportCsv': '匯出 CSV',
+      'teacher.tokenNote': '教師令牌已保存在這台裝置。重新整理即可恢復。',
+      'teacher.groups': '小組狀態',
+      'teacher.hints': '最近提示',
+      'teacher.noRoom': '沒有可恢復的課堂',
+      'teacher.confirmReveal': '確認統一揭曉？此後不能再開票（單輪）。',
+      'teacher.voteOn': '投票中',
+      'teacher.voteOff': '未開啟／已截止',
+      'teacher.revealed': '已揭曉',
+      'teacher.notRevealed': '未揭曉',
+      'teacher.submitted': '已提交',
+      'teacher.notSubmitted': '未提交',
+      'teacher.colId': 'ID',
+      'teacher.colName': '名稱',
+      'teacher.colEv': '證據',
+      'teacher.colIv': '問詢數',
+      'teacher.colVote': '投票',
+      'teacher.colResult': '結果',
+      'teacher.noGroups': '尚無小組加入',
+      'teacher.act': '第{n}幕',
+      'student.docTitle': '學生端 · AI偵探課堂',
+      'student.heading': '加入課堂',
+      'student.code': '課堂碼',
+      'student.codePh': '例如 A1B2C3',
+      'student.groupId': '小組 ID（不能靠猜來占用；第一次自訂，如 G1）',
+      'student.groupLabel': '小組顯示名',
+      'student.groupPh': '第一組',
+      'student.join': '加入',
+      'student.rejoin': '用本機令牌重連',
+      'student.home': '首頁',
+      'student.noToken': '這台裝置沒有儲存的令牌',
+      'student.defaultGroup': '小組',
+      'student.room': '課堂 {code}',
+      'student.evidenceBtn': '證據板',
+      'student.notesBtn': '筆記',
+      'student.calcBtn': '科學分析',
+      'student.evidenceTitle': '證據板',
+      'student.interviewed': '已問詢',
+      'student.hints': '教師提示',
+      'student.help': '點地面移動 · 點選線索、人物或門互動 · 打開面板時暫停移動',
+      'student.taskExplore': '探索場景、收集證據、問詢人物、完成科學分析',
+      'student.taskVote': '返回主持人處，提交唯一一次最終投票',
+      'student.taskWaiting': '已提交，等待揭曉',
+      'student.taskResult': '結果：{result}（老師已揭曉）',
+      'student.taskGoal': '目標：{text}',
+      'brief.title': '案件簡報',
+      'brief.start': '開始調查',
+      'dialog.title': '交談',
+      'dialog.orType': '或輸入問題（將匹配預設問答）',
+      'dialog.ask': '提問',
+      'dialog.close': '關閉',
+      'dialog.q': '問：',
+      'dialog.a': '答：',
+      'item.title': '調查',
+      'item.close': '關閉',
+      'item.viewed': '已查看這件物品。',
+      'item.gained': '取得證據：',
+      'item.none': '未取得新證據（可能已經收集，或這一幕尚未解鎖）。',
+      'evidence.title': '證據板',
+      'evidence.close': '關閉',
+      'evidence.empty': '尚無證據。點選發光的線索進行調查。',
+      'evidence.source': '來源：',
+      'evidence.none': '尚無證據',
+      'notes.title': '推理筆記',
+      'notes.ph': '記錄證據鏈與討論要點…',
+      'notes.save': '儲存',
+      'notes.close': '關閉',
+      'calc.title': '科學分析／計算草稿',
+      'calc.save': '儲存草稿',
+      'calc.close': '關閉',
+      'vote.title': '最終投票（僅一次）',
+      'vote.who': '選擇人物',
+      'vote.evidence': '引用的證據編號',
+      'vote.evidencePh': '例如 E01, E04, E08 或計算結論',
+      'vote.why': '科學分析依據',
+      'vote.whyPh': '說明為何這段陳述或行為與證據矛盾，或如何直接導致事件…',
+      'vote.submit': '確認提交（不可改）',
+      'vote.cancel': '取消',
+      'vote.note': '提交前請小組一起檢查。確認後即鎖定，不能改選。',
+      'vote.confirm': '確認提交？提交後不能修改。',
+      'vote.notOpen': '老師尚未開啟投票',
+      'vote.already': '已提交，等待揭曉',
+      'vote.submitted': '已提交',
+      'vote.banner': '{msg}（視窗不會自動關閉，可點「取消」自行關掉）',
+      'result.title': '揭曉結果',
+      'result.close': '關閉',
+      'result.pass': '合格',
+      'result.fail': '不合格',
+      'result.missing': '未提交',
+      'host.title': '調查主持人',
+      'host.close': '關閉',
+      'host.enterVote': '進入最終投票',
+      'host.viewReveal': '查看揭曉',
+      'host.revealed': '結果已揭曉。本組狀態：{result}。可以查看復盤要點。',
+      'host.waiting': '已提交，等待揭曉',
+      'side.noneIv': '尚未問詢',
+      'side.noneHint': '暫無',
+      'badge.mock': '示範問答（Mock）',
+      'prompt.investigate': '點擊調查：{name}',
+      'prompt.talk': '點擊交談：{name}',
+      'prompt.door': '點擊{label}',
+      'prompt.walking': '前往：{name}',
+      'prompt.enter': '進入',
+      'scene.door': '門',
+      'scene.player': '馬利歐',
+      'scene.busStop': '公車站',
+      'scene.hqBoard': '證據牆／物理工作臺',
+      'hint.stage': '教師將調查推進到第 {n} 幕',
+      'api.fail': '請求失敗',
+      'lang.aria': '語言',
     },
   };
 
@@ -320,13 +466,51 @@
     '演示问答（Mock）': 'Demo Q&A (Mock)',
   };
 
+  const serverTw = {
+    '未知案件，请选择 physics 或 chemistry': '未知案件，請選擇 physics 或 chemistry',
+    '课堂不存在': '課堂不存在',
+    '教师权限校验失败': '教師權限驗證失敗',
+    'stage 须为 1/2/3': 'stage 須為 1、2 或 3',
+    '提示不能为空': '提示不能是空的',
+    '已揭晓，不能重新开票（单轮投票）': '已揭曉，不能重新開票（單輪投票）',
+    '该小组ID已被占用，请换一个或使用原 token 重连': '這個小組 ID 已被占用，請換一個，或用原來的 token 重連',
+    '小组身份校验失败': '小組身分驗證失敗',
+    '物品不存在': '物品不存在',
+    '人物不存在': '人物不存在',
+    '已揭晓，不能再提交': '已揭曉，不能再提交',
+    '老师尚未开启投票或已截止': '老師尚未開啟投票，或投票已截止',
+    '本组已提交，不能改选或重复提交': '本組已提交，不能改選或重複提交',
+    '无效的嫌疑人选择': '嫌疑人選擇無效',
+    '请填写证据与科学分析依据': '請填寫證據與科學分析依據',
+    '导出失败': '匯出失敗',
+    '请求失败': '請求失敗',
+    '最终投票已开启，请各组返回主持人处提交。': '最終投票已開啟，請各組回到主持人處提交。',
+    '最终投票已关闭。': '最終投票已關閉。',
+    '已提交，等待揭晓': '已提交，等待揭曉',
+    '……（对方没有更多可说的了）': '……（對方沒有更多可說的了）',
+    '演示问答（Mock）': '示範問答（Mock）',
+  };
+
   let lang = readStored();
   const listeners = [];
 
+  function canonLang(v) {
+    if (v === 'en') return 'en';
+    if (v === 'zh-TW' || v === 'zh-tw' || v === 'zh_TW' || v === 'zh-Hant' || v === 'zh-hant') return 'zh-TW';
+    if (v === 'zh' || v === 'zh-CN' || v === 'zh-cn') return 'zh';
+    return null;
+  }
+
+  function htmlLang(code) {
+    if (code === 'en') return 'en';
+    if (code === 'zh-TW') return 'zh-Hant';
+    return 'zh-CN';
+  }
+
   function readStored() {
     try {
-      const v = localStorage.getItem(KEY);
-      if (v === 'en' || v === 'zh') return v;
+      const stored = canonLang(localStorage.getItem(KEY));
+      if (stored) return stored;
     } catch (_) {}
     return 'zh';
   }
@@ -356,8 +540,9 @@
   }
 
   function serverText(msg) {
-    if (!msg || lang !== 'en') return msg;
-    if (serverEn[msg]) return serverEn[msg];
+    if (!msg || lang === 'zh') return msg;
+    const table = lang === 'en' ? serverEn : serverTw;
+    if (table[msg]) return table[msg];
     const m = String(msg).match(/^教师将调查推进到第 (\d) 幕$/);
     if (m) return t('hint.stage', { n: m[1] });
     return msg;
@@ -396,17 +581,18 @@
   }
 
   function setLang(next) {
-    if (next !== 'en' && next !== 'zh') return;
-    if (next === lang) {
+    const canon = canonLang(next);
+    if (!canon) return;
+    if (canon === lang) {
       apply(document);
       updateToggle();
       return;
     }
-    lang = next;
+    lang = canon;
     try {
       localStorage.setItem(KEY, lang);
     } catch (_) {}
-    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.documentElement.lang = htmlLang(lang);
     apply(document);
     updateToggle();
     listeners.forEach((fn) => {
@@ -432,7 +618,7 @@
   }
 
   function init() {
-    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.documentElement.lang = htmlLang(lang);
     bindToggle();
     apply(document);
     updateToggle();

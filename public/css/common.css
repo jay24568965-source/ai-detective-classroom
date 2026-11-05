@@ -66,18 +66,21 @@ label { display: block; margin: 0.5rem 0 0.25rem; color: var(--muted); font-size
   z-index: 80;
   display: flex;
   align-items: center;
-  gap: 0.15rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.1rem;
+  max-width: calc(100vw - 16px);
   background: rgba(15, 23, 42, 0.92);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 0.12rem 0.3rem;
+  padding: 0.12rem 0.25rem;
 }
 .lang-switch button {
   background: transparent;
   color: var(--muted);
-  padding: 0.18rem 0.5rem;
+  padding: 0.18rem 0.42rem;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 .lang-switch button.active {

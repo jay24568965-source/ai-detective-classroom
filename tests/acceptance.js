@@ -292,9 +292,110 @@ async function langChecks() {
   const back = packLocale(joinZh.json.case, 'en');
   const restored = packLocale(Object.assign({}, joinZh.json.case, { locale: 'zh' }), 'zh');
   record('lang-10', 'client locale helper switches both ways from one pack', back.title === 'The Unexpected Hard Brake' && back.suspects[0].sprite === 'luigi' && restored.title === '意外的急刹车', back.title);
+
+  const listTw = await req('GET', '/api/cases?lang=zh-TW');
+  const twPhysics = (listTw.json.cases || []).find((c) => c.id === 'physics');
+  const twChem = (listTw.json.cases || []).find((c) => c.id === 'chemistry');
+  record(
+    'lang-11',
+    'lang=zh-TW case list is Traditional and keeps simplified alongside',
+    twPhysics && twPhysics.title === '意外的急煞車' && twPhysics.locale === 'zh-TW' &&
+      twChem && twChem.title === '颱風夜老宅' && twChem.subject === '化學' &&
+      twPhysics.i18n && twPhysics.i18n.zh && twPhysics.i18n.zh.title === '意外的急刹车',
+    twPhysics && twPhysics.title
+  );
+
+  const joinTw = await req('POST', '/api/student/join', { code, groupId: 'LT', groupLabel: '繁體組' }, { 'x-lang': 'zh-TW' });
+  const twCase = joinTw.json.case;
+  const driver = (twCase.suspects || []).find((s) => s.id === 'A');
+  const twSign = (((twCase.maps || []).find((m) => m.id === 'road') || {}).items || []).find((i) => i.id === 'sign');
+  const twE01 = (twCase.evidence || []).find((e) => e.id === 'E01');
+  const twBlob = JSON.stringify(twCase);
+  record(
+    'lang-12',
+    'x-lang zh-TW localizes physics narrative, suspect, item, evidence',
+    twCase.title === '意外的急煞車' && twCase.locale === 'zh-TW' && !twCase.correctSuspectId &&
+      driver && driver.name === '前車司機A' && driver.sprite === 'luigi' &&
+      twSign && twSign.name === '限速標誌記錄' &&
+      twE01 && twE01.studentText.indexOf('50 km/h') >= 0 && twE01.name === '道路限速記錄' &&
+      twCase.i18n && twCase.i18n.zh && twCase.i18n.zh.title === '意外的急刹车' &&
+      twCase.i18n['zh-TW'] && !twCase.i18n['zh-TW'].revealSummary &&
+      !twBlob.includes('标准答案') && !twBlob.includes('標準答案') && !twBlob.includes('Answer key'),
+    driver && driver.name
+  );
+  record(
+    'lang-12b',
+    'default join carries a Traditional overlay for client switching',
+    !!(joinZh.json.case.i18n && joinZh.json.case.i18n['zh-TW'] && joinZh.json.case.i18n['zh-TW'].title === '意外的急煞車' && !joinZh.json.case.i18n['zh-TW'].revealSummary),
+    ''
+  );
+
+  const twBack = packLocale(joinZh.json.case, 'zh-TW');
+  const twRestored = packLocale(twCase, 'zh');
+  const twToEn = packLocale(twCase, 'en');
+  record(
+    'lang-13',
+    'client helper switches among zh, zh-TW, and en',
+    twBack.title === '意外的急煞車' && twBack.suspects[0].sprite === 'luigi' &&
+      twRestored.title === '意外的急刹车' && twToEn.title === 'The Unexpected Hard Brake',
+    twBack.title
+  );
+
+  const headerTw = await req('GET', '/api/cases', null, { 'x-lang': 'zh-tw' });
+  const headerPhysics = (headerTw.json.cases || []).find((c) => c.id === 'physics');
+  record('lang-14', 'x-lang zh-tw header matches ?lang=zh-TW', headerPhysics && headerPhysics.title === '意外的急煞車', headerPhysics && headerPhysics.title);
+
+  const chemTw = await req('POST', '/api/student/join', { code: createdC.json.code, groupId: 'LCT', groupLabel: '繁體' }, { 'x-lang': 'zh-TW' });
+  const zhouTw = (chemTw.json.case.suspects || []).find((s) => s.id === 'zhou');
+  record(
+    'lang-15',
+    'chemistry Traditional keeps ids and the surname 余',
+    chemTw.json.case.title === '颱風夜老宅' && zhouTw && zhouTw.name === '周姨' && zhouTw.sprite === 'daisy' &&
+      chemTw.json.case.background.indexOf('余老師') >= 0 && chemTw.json.case.background.indexOf('餘老師') < 0 &&
+      chemTw.json.case.voteQuestion.indexOf('浴室') >= 0,
+    zhouTw && zhouTw.name
+  );
+
+  const presetsTw = await req('GET', `/api/student/${code}/interview/${sid}/presets`, null, { 'x-group-token': joinZh.json.groupToken, 'x-lang': 'zh-TW' });
+  record(
+    'lang-16',
+    'Traditional mock presets differ from simplified and stay aligned',
+    presetsTw.json.label === '示範問答（Mock）' &&
+      presetsTw.json.presets && presetsTw.json.presets[0] && presetsTw.json.presets[0] !== presetsZh.json.presets[0] &&
+      presetsTw.json.presets[0].indexOf('車') >= 0 &&
+      (presetsZh.json.qa || []).every((row) => row.qTw && row.aTw && row.qEn && row.aEn),
+    presetsTw.json.presets && presetsTw.json.presets[0]
+  );
+  const askedTw = await req(
+    'POST',
+    `/api/student/${code}/interview`,
+    { suspectId: sid, question: presetsTw.json.presets[0] },
+    { 'x-group-token': joinZh.json.groupToken, 'x-lang': 'zh-TW' }
+  );
+  record(
+    'lang-17',
+    'Traditional question returns a Traditional answer and keeps simplified canonical',
+    askedTw.status === 200 && askedTw.json.answer && askedTw.json.answerTw === askedTw.json.answer &&
+      askedTw.json.answerZh && askedTw.json.answer !== askedTw.json.answerZh &&
+      !String(askedTw.json.answer).includes('標準答案'),
+    askedTw.json.answer
+  );
+
+  const revTw = await req('POST', `/api/teacher/${code}/reveal`, {}, { 'x-teacher-token': teacherToken, 'x-lang': 'zh-TW' });
+  record(
+    'lang-18',
+    'reveal honors zh-TW and still returns simplified and English',
+    revTw.json.revealSummary && revTw.json.revealSummary.headline.indexOf('標準答案') >= 0 &&
+      revTw.json.revealSummaryZh && revTw.json.revealSummaryZh.headline.indexOf('标准答案') >= 0 &&
+      revTw.json.revealSummaryEn && revTw.json.revealSummaryEn.headline.indexOf('Answer key') >= 0 &&
+      revTw.json.revealSummaryTw && revTw.json.revealSummaryTw.headline.indexOf('標準答案') >= 0,
+    revTw.json.revealSummary && revTw.json.revealSummary.headline
+  );
 }
 
 async function main() {
+  require('./click-move').run(record);
+
   const server = await new Promise((resolve) => {
     const s = app.listen(PORT, () => resolve(s));
   });
@@ -325,7 +426,7 @@ async function main() {
     record(
       'lang-ui',
       'language toggle on home, teacher, student',
-      [home, teacherPage, studentPage].every((r) => r.raw.includes('id="langSwitch"') && r.raw.includes('data-set-lang="en"') && r.raw.includes('/js/i18n.js')),
+      [home, teacherPage, studentPage].every((r) => r.raw.includes('id="langSwitch"') && r.raw.includes('data-set-lang="zh-TW"') && r.raw.includes('data-set-lang="en"') && r.raw.includes('繁體') && r.raw.includes('/js/i18n.js')),
       ''
     );
 
@@ -350,10 +451,10 @@ async function main() {
     '',
     '## Manual checks (not claimed automated)',
     '',
-    '- [ ] WASD movement, collision with walls, door transitions (physics road↔hq, chemistry rooms)',
-    '- [ ] Panel open blocks movement keys; close restores',
-    '- [ ] Touch pad on coarse pointer',
-    '- [ ] 中文 | EN toggle on home, teacher, and student; choice survives refresh',
+    '- [ ] Click or tap the floor to walk; click a clue, person, or door to approach and interact (physics road↔hq, chemistry rooms)',
+    '- [ ] Opening a panel cancels the walk; closing it allows clicks again',
+    '- [ ] Tap the scene on a phone-width viewport (no WASD, no D-pad)',
+    '- [ ] 简体 | 繁體 | EN on home, teacher, and student; choice survives refresh (ai-detective-lang)',
     '- [ ] UI label 演示问答（Mock） visible during interview',
     '- [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal',
     '- [ ] No UI for second round / eliminate / bonus clues',

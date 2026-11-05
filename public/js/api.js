@@ -1,8 +1,22 @@
 /** Thin client API — no secrets stored beyond session tokens */
+function langHeader() {
+  let lang = '';
+  try {
+    if (typeof window !== 'undefined' && window.I18N && typeof window.I18N.getLang === 'function') {
+      lang = window.I18N.getLang();
+    } else if (typeof localStorage !== 'undefined') {
+      lang = localStorage.getItem('ai-detective-lang') || '';
+    }
+  } catch (_) {}
+  if (lang === 'en' || lang === 'zh-TW') return { 'x-lang': lang };
+  return {};
+}
+
 const API = {
   base: '',
+  langHeader,
   async req(path, opts = {}) {
-    const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+    const headers = { 'Content-Type': 'application/json', ...langHeader(), ...(opts.headers || {}) };
     const res = await fetch(this.base + path, { ...opts, headers });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {

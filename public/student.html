@@ -9,7 +9,9 @@
 </head>
 <body>
   <div class="lang-switch" id="langSwitch" role="group" aria-label="语言">
-    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <button type="button" data-set-lang="zh" aria-pressed="true">简体</button>
+    <span class="lang-sep" aria-hidden="true">|</span>
+    <button type="button" data-set-lang="zh-TW" aria-pressed="false">繁體</button>
     <span class="lang-sep" aria-hidden="true">|</span>
     <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
   </div>
@@ -43,13 +45,6 @@
     <div class="stage-wrap">
       <canvas id="gameCanvas" width="800" height="540"></canvas>
       <div class="prompt-chip" id="promptChip"></div>
-      <div class="touch-pad" id="touchPad">
-        <button class="up" data-dx="0" data-dy="-1">↑</button>
-        <button class="left" data-dx="-1" data-dy="0">←</button>
-        <button class="interact" id="btnTouchE">E</button>
-        <button class="right" data-dx="1" data-dy="0">→</button>
-        <button class="down" data-dx="0" data-dy="1">↓</button>
-      </div>
     </div>
     <aside class="side">
       <h3><span data-i18n="student.evidenceTitle">证据板</span> <span id="evCount" class="badge">0</span></h3>
@@ -58,7 +53,7 @@
       <div class="list" id="ivList"></div>
       <h3 data-i18n="student.hints">教师提示</h3>
       <div class="list" id="hintList"></div>
-      <p class="muted" data-i18n="student.help" style="font-size:0.75rem;margin-top:1rem;">WASD / 方向键移动 · E 互动 · 打开面板时停止移动</p>
+      <p class="muted" data-i18n="student.help" style="font-size:0.75rem;margin-top:1rem;">点击地面移动 · 点击线索、人物或门互动 · 打开面板时暂停移动</p>
     </aside>
   </div>
 

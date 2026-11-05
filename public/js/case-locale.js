@@ -1,29 +1,38 @@
 /**
- * Apply an English overlay onto a Chinese public case view.
+ * Apply a locale overlay onto the simplified-Chinese public case view.
  * Shared by the browser and the Express server so both paths stay in sync.
  * Sprite ids, coordinates, evidence ids, and answer fields are left untouched.
+ *
+ * Supported codes: zh (default simplified), zh-TW (Traditional), en.
  */
 (function (root, factory) {
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CaseLocale = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  function apply(zhView, en) {
+  function normalizeLang(lang) {
+    const v = String(lang || '').trim().toLowerCase().replace(/_/g, '-');
+    if (v === 'en' || v === 'english') return 'en';
+    if (v === 'zh-tw' || v === 'zh-hant' || v === 'zhtw' || v === 'zh-hk' || v === 'zh-hant-tw') return 'zh-TW';
+    return 'zh';
+  }
+
+  function apply(zhView, overlay) {
     if (!zhView) return zhView;
     const out = JSON.parse(JSON.stringify(zhView));
-    if (!en) return out;
+    if (!overlay) return out;
     ['title', 'subject', 'durationHint', 'voteQuestion', 'background'].forEach((k) => {
-      if (en[k]) out[k] = en[k];
+      if (overlay[k]) out[k] = overlay[k];
     });
-    if (Array.isArray(en.briefing)) out.briefing = en.briefing.slice();
-    if (en.hostNpc && out.hostNpc) {
+    if (Array.isArray(overlay.briefing)) out.briefing = overlay.briefing.slice();
+    if (overlay.hostNpc && out.hostNpc) {
       ['name', 'shortName', 'role', 'greeting', 'votePrompt'].forEach((k) => {
-        if (en.hostNpc[k]) out.hostNpc[k] = en.hostNpc[k];
+        if (overlay.hostNpc[k]) out.hostNpc[k] = overlay.hostNpc[k];
       });
     }
-    if (en.suspects && Array.isArray(out.suspects)) {
+    if (overlay.suspects && Array.isArray(out.suspects)) {
       out.suspects = out.suspects.map((s) => {
-        const t = en.suspects[s.id];
+        const t = overlay.suspects[s.id];
         if (!t) return s;
         const next = Object.assign({}, s);
         ['name', 'shortName', 'role', 'card'].forEach((k) => {
@@ -32,9 +41,9 @@
         return next;
       });
     }
-    if (en.maps && Array.isArray(out.maps)) {
+    if (overlay.maps && Array.isArray(out.maps)) {
       out.maps = out.maps.map((m) => {
-        const t = en.maps[m.id];
+        const t = overlay.maps[m.id];
         if (!t) return m;
         const next = Object.assign({}, m, { name: t.name || m.name });
         if (t.doors && Array.isArray(m.doors)) {
@@ -49,9 +58,9 @@
         return next;
       });
     }
-    if (en.evidence && Array.isArray(out.evidence)) {
+    if (overlay.evidence && Array.isArray(out.evidence)) {
       out.evidence = out.evidence.map((e) => {
-        const t = en.evidence[e.id];
+        const t = overlay.evidence[e.id];
         if (!t) return e;
         return Object.assign({}, e, {
           name: t.name || e.name,
@@ -60,9 +69,9 @@
         });
       });
     }
-    if (en.calcTasks && Array.isArray(out.calcTasks)) {
+    if (overlay.calcTasks && Array.isArray(out.calcTasks)) {
       out.calcTasks = out.calcTasks.map((task) => {
-        const t = en.calcTasks[task.id];
+        const t = overlay.calcTasks[task.id];
         if (!t) return task;
         const next = Object.assign({}, task, {
           title: t.title || task.title,
@@ -76,30 +85,35 @@
         return next;
       });
     }
-    if (en.stages && Array.isArray(out.stages)) {
+    if (overlay.stages && Array.isArray(out.stages)) {
       out.stages = out.stages.map((s) =>
-        Object.assign({}, s, { name: en.stages[String(s.id)] || en.stages[s.id] || s.name })
+        Object.assign({}, s, { name: overlay.stages[String(s.id)] || overlay.stages[s.id] || s.name })
       );
     }
-    if (out.revealSummary && en.revealSummary) out.revealSummary = en.revealSummary;
+    if (out.revealSummary && overlay.revealSummary) out.revealSummary = overlay.revealSummary;
     return out;
   }
 
-  /** Pick zh or en from a public case pack that always carries i18n.en. */
-  function packLocale(pack, lang) {
-    if (!pack) return pack;
-    const en = pack.i18n && pack.i18n.en;
-    let zh;
-    if (pack.locale === 'en' && pack.i18n && pack.i18n.zh) {
-      zh = pack.i18n.zh;
-    } else {
-      zh = JSON.parse(JSON.stringify(pack));
-      delete zh.i18n;
-      delete zh.locale;
+  function baseZh(pack) {
+    if (pack.locale && pack.locale !== 'zh' && pack.i18n && pack.i18n.zh) {
+      return pack.i18n.zh;
     }
-    if (lang === 'en' && en) return apply(zh, en);
-    return JSON.parse(JSON.stringify(zh));
+    const zh = JSON.parse(JSON.stringify(pack));
+    delete zh.i18n;
+    delete zh.locale;
+    return zh;
   }
 
-  return { apply, packLocale };
+  /** Pick zh, zh-TW, or en from a public case pack that carries i18n overlays. */
+  function packLocale(pack, lang) {
+    if (!pack) return pack;
+    const code = normalizeLang(lang);
+    const zh = baseZh(pack);
+    if (code === 'zh') return JSON.parse(JSON.stringify(zh));
+    const overlay = pack.i18n && pack.i18n[code];
+    if (!overlay) return JSON.parse(JSON.stringify(zh));
+    return apply(zh, overlay);
+  }
+
+  return { apply, packLocale, normalizeLang };
 });
