@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/acceptance.js"
+    "test": "node tests/acceptance.js && node tests/deepseek-interview.js"
   },
   "dependencies": {
     "express": "^4.21.0",

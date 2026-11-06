@@ -107,6 +107,17 @@
 .chat-log .a { color: var(--text); margin-bottom: 0.5rem; }
 .preset-btns { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.5rem 0; }
 .preset-btns button { text-align: left; background: var(--panel2); color: var(--text); font-weight: 500; }
+button.is-loading { display: inline-flex; align-items: center; gap: 0.4rem; }
+.spinner {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ai-spin 0.7s linear infinite;
+  flex: 0 0 auto;
+}
+@keyframes ai-spin { to { transform: rotate(360deg); } }
 @media (max-width: 900px) {
   .game-shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
   .side { border-left: none; border-top: 1px solid var(--border); max-height: 40vh; }

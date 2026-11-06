@@ -2,6 +2,8 @@
  * Automated acceptance against running or ephemeral server.
  * Covers KEYWORDS checklist items that are API-testable.
  */
+delete process.env.DEEPSEEK_API_KEY;
+
 const http = require('http');
 const { app, rooms } = require('../server');
 
@@ -509,7 +511,7 @@ async function main() {
     '- [ ] Opening a panel cancels the walk; closing it allows clicks again',
     '- [ ] Tap the scene on a phone-width viewport (no WASD, no D-pad)',
     '- [ ] 简体 | 繁體 | EN on home, teacher, and student; choice survives refresh (ai-detective-lang)',
-    '- [ ] UI label 演示问答（Mock） visible during interview',
+    '- [ ] UI label 演示问答（Mock） when DeepSeek is unset or a turn falls back; 真实AI（DeepSeek） only after a live reply',
     '- [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal',
     '- [ ] No UI for second round / eliminate / bonus clues',
     '- [ ] Chemistry C-E05 is the tablet color test (no disputed-subject or alcohol-wipe wording)',

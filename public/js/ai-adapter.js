@@ -1,21 +1,25 @@
 /**
- * AI inquiry adapter stub.
- * Current: Mock preset Q&A via server (no API keys).
- * Future: swap provider to 'convai' behind server proxy — never put secrets in frontend.
+ * Suspect interview adapter.
+ * Always posts to the server. DeepSeek runs only on the server when DEEPSEEK_API_KEY is set.
+ * The badge follows the server's mode; this file never decides that a reply was live on its own.
  */
 const AIAdapter = {
   provider: 'mock',
+  model: '',
   label() {
-    if (this.provider === 'mock') {
-      return window.I18N ? I18N.t('badge.mock') : '演示问答（Mock）';
+    if (this.provider === 'deepseek') {
+      return window.I18N ? I18N.t('badge.live') : '真实AI（DeepSeek）';
     }
-    const lang = window.I18N && I18N.getLang();
-    if (lang === 'en') return 'Live AI (Convai)';
-    if (lang === 'zh-TW') return '真實 AI（Convai）';
-    return '真实AI（Convai）';
+    return window.I18N ? I18N.t('badge.mock') : '演示问答（Mock）';
+  },
+  /** @returns {'live'|'mock'} */
+  applyServer(data) {
+    const live = !!(data && data.mode === 'live' && data.adapter && data.adapter.provider === 'deepseek');
+    this.provider = live ? 'deepseek' : 'mock';
+    this.model = live && data.adapter.model ? String(data.adapter.model) : '';
+    return live ? 'live' : 'mock';
   },
   async ask({ code, token, suspectId, question }) {
-    // Always go through server; Convai would be server-side later
     return API.studentPost(code, token, '/interview', { suspectId, question });
   },
   async presets({ code, token, suspectId }) {
