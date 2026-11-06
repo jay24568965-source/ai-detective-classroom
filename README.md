@@ -13,7 +13,7 @@ npm start
 
 浏览器打开：<http://127.0.0.1:3080>
 
-可选环境变量：`PORT=3080`。
+可选环境变量：`PORT=3080`。嫌疑人问询另见下方 **AI 问询**（`DEEPSEEK_API_KEY`）。
 
 自动化验收：
 
@@ -38,7 +38,7 @@ npm test
 1. 打开「学生端」，输入课堂码、自定小组 ID（如 `G1`）与显示名后加入。
 2. 同组共用一个侦探角色；令牌保存在 `localStorage`（`ai-detective-student`），刷新点「用本机令牌重连」。
 3. **点击或轻触地面**移动侦探；**点击线索、人物或门**会先走过去再调查或交谈（已经站在旁边则立刻打开）。手机和平板同样点按，不再使用 WASD 或虚拟方向键。
-4. 调查物品 → 证据板；问询 5 名嫌疑人（界面标注 **演示问答（Mock）**）。
+4. 调查物品 → 证据板；问询 5 名嫌疑人。未配置 DeepSeek 时界面标注 **演示问答（Mock）**；某次提问由 DeepSeek 成功作答后改为 **真实AI（DeepSeek）**。
 5. 在工作台做计算/笔记；投票开启后回大厅/指挥室找 **调查主持人** 提交 **唯一一次** 最终指认（证据 + 依据）。
 6. 提交后只显示「已提交，等待揭晓」；揭晓后显示 **合格 / 不合格 / 未提交**。
 
@@ -59,8 +59,17 @@ npm test
 
 ## AI 问询
 
-- 当前仅 **Mock 预设问答**，无需 API Key，可离线演示。
-- 前端 `public/js/ai-adapter.js` 为可替换适配层；未来 Convai 应走 **服务端代理**，禁止把密钥放进前端或 `localStorage`。
+嫌疑人提问（预设按钮或自由输入）都走服务端 `POST /api/student/:code/interview`。
+
+- **未设置 `DEEPSEEK_API_KEY`**：使用案件里的 **Mock 预设问答**，可离线演示。界面保持「演示问答（Mock）」/「示範問答（Mock）」/「Demo Q&A (Mock)」。
+- **已设置密钥**：服务端用 [DeepSeek](https://api.deepseek.com) 的 OpenAI 兼容接口 `POST /chat/completions`，让该嫌疑人按人物卡和预设问答作答（简体 / 繁體 / English 跟随 `?lang=` 或 `x-lang`）。成功时响应为 `mode: "live"`，`adapter.provider` 为 `deepseek`，界面改为「真实AI（DeepSeek）」/「真實 AI（DeepSeek）」/「Live AI (DeepSeek)」。
+- **超时、4xx/5xx 或空回复**：这一问退回 Mock，仍返回答案，界面保持 Mock 文案。默认超时约 16 秒。
+- 模型名可选，环境变量 `DEEPSEEK_MODEL`，默认 `deepseek-chat`。
+- 密钥只放在运行环境里。不要写进前端、案件 JSON、git 或 `localStorage`。本地可复制 `.env.example` 为 `.env`（`.env` 已被忽略）。
+
+Render 自动部署 `main` 时，在 Web Service 的 **Environment** 里新增 `DEEPSEEK_API_KEY`（`render.yaml` 里该变量为 `sync: false`，值只存在仪表盘）。不填则线上继续是 Mock。可选再设 `DEEPSEEK_MODEL=deepseek-chat`。
+
+前端 `public/js/ai-adapter.js` 只把问题和服务器返回的 `mode` 交给页面，不保存密钥。
 
 ## 已知限制
 
@@ -74,12 +83,16 @@ npm test
 
 ```
 server.js              Express + 内存课堂
+lib/deepseek.js        DeepSeek Chat Completions（仅服务端）
+lib/ai-interview.js    人物提示词与 Mock 回退
 public/                静态前端
 cases/                 案件 JSON
-tests/acceptance.js    API 验收脚本
+tests/acceptance.js    API 验收（无密钥，Mock）
+tests/deepseek-interview.js  桩 fetch 的 live / 回退测试
 TEST_RESULTS.md
 CONFLICTS_OR_TODOS.md
 KEYWORDS.txt           需求来源摘要
+.env.example           空的 DEEPSEEK_API_KEY 样例
 ```
 
 ## 分享给老师（不用装 Node）

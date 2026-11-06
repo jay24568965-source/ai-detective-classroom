@@ -140,7 +140,8 @@ function applyGameChrome() {
   $('caseName').textContent = CASE.title;
   $('roomBadge').textContent = I18N.t('student.room', { code: CODE });
   $('groupBadge').textContent = GROUP_LABEL + ' / ' + GROUP_ID;
-  $('aiBadge').textContent = I18N.t('badge.mock');
+  syncAiBadge();
+  if (asking) setAskBusy(true);
   renderBrief();
   renderSide();
   updateTask();
@@ -379,6 +380,53 @@ function renderHost() {
   $('hostText').textContent = text;
 }
 
+let aiLive = false;
+let asking = false;
+let dialogGen = 0;
+
+function syncAiBadge() {
+  const text = aiLive ? I18N.t('badge.live') : I18N.t('badge.mock');
+  ['aiBadge', 'dialogAiBadge'].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = text;
+    el.classList.toggle('mock', !aiLive);
+    el.classList.toggle('live', aiLive);
+  });
+}
+
+function noteAiMode(data) {
+  if (window.AIAdapter && typeof AIAdapter.applyServer === 'function') {
+    aiLive = AIAdapter.applyServer(data) === 'live';
+  } else {
+    aiLive = !!(data && data.mode === 'live' && data.adapter && data.adapter.provider === 'deepseek');
+  }
+  syncAiBadge();
+}
+
+function setAskBusy(busy) {
+  asking = busy;
+  const askBtn = $('btnAsk');
+  const custom = $('customQ');
+  const dialog = $('modalDialog');
+  if (askBtn) {
+    askBtn.disabled = busy;
+    askBtn.classList.toggle('is-loading', busy);
+    askBtn.textContent = '';
+    if (busy) {
+      const spinner = document.createElement('span');
+      spinner.className = 'spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      askBtn.appendChild(spinner);
+    }
+    askBtn.appendChild(document.createTextNode(busy ? I18N.t('dialog.thinking') : I18N.t('dialog.ask')));
+  }
+  if (custom) custom.disabled = busy;
+  const presets = $('presetBtns');
+  if (presets) presets.querySelectorAll('button').forEach((btn) => { btn.disabled = busy; });
+  if (dialog) dialog.setAttribute('aria-busy', busy ? 'true' : 'false');
+}
+
 function qaText(pair, which) {
   const lang = I18N.getLang();
   if (lang === 'en') {
@@ -392,11 +440,19 @@ function qaText(pair, which) {
   return pair[which === 'q' ? 'q' : 'a'] || '';
 }
 
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function renderChat() {
   const sus = (CASE.suspects || []).find((s) => s.id === currentSuspect);
   if (sus) $('dialogTitle').textContent = sus.name;
-  let html = sus ? `<p class="muted">${sus.card}</p>` : '';
-  html += CHAT.map((c) => `<div class="q">${I18N.t('dialog.q')}${qaText(c, 'q')}</div><div class="a">${I18N.t('dialog.a')}${qaText(c, 'a')}</div>`).join('');
+  let html = sus ? `<p class="muted">${escapeHtml(sus.card)}</p>` : '';
+  html += CHAT.map((c) => `<div class="q">${I18N.t('dialog.q')}${escapeHtml(qaText(c, 'q'))}</div><div class="a">${I18N.t('dialog.a')}${escapeHtml(qaText(c, 'a'))}</div>`).join('');
   const log = $('chatLog');
   log.innerHTML = html;
   log.scrollTop = log.scrollHeight;
@@ -404,23 +460,26 @@ function renderChat() {
 
 function renderPresets() {
   $('presetBtns').innerHTML = QA_CACHE
-    .map((p, i) => `<button type="button" data-q="${i}">${qaText(p, 'q')}</button>`)
+    .map((p, i) => `<button type="button" data-q="${i}">${escapeHtml(qaText(p, 'q'))}</button>`)
     .join('');
   const rows = QA_CACHE;
   $('presetBtns').querySelectorAll('button').forEach((btn) => {
+    btn.disabled = asking;
     btn.onclick = () => ask(qaText(rows[Number(btn.dataset.q)], 'q'));
   });
 }
 
 async function openInterview(suspectId) {
+  dialogGen += 1;
   currentSuspect = suspectId;
   CHAT = [];
   QA_CACHE = [];
   $('customQ').value = '';
+  setAskBusy(false);
+  syncAiBadge();
   renderChat();
   try {
     const presets = await AIAdapter.presets({ code: CODE, token: TOKEN, suspectId });
-    $('aiBadge').textContent = I18N.t('badge.mock');
     QA_CACHE = presets.qa && presets.qa.length
       ? presets.qa
       : (presets.presetsEn && I18N.getLang() === 'en' ? presets.presetsEn : presets.presets || []).map((q) => ({ q, qEn: q }));
@@ -432,11 +491,19 @@ async function openInterview(suspectId) {
 }
 
 async function ask(question) {
-  if (!currentSuspect || !question) return;
+  if (!currentSuspect || !question || asking) return;
+  const gen = dialogGen;
+  const suspectAtSend = currentSuspect;
+  if ($('customQ') && $('customQ').value.trim() === question) $('customQ').value = '';
+  setAskBusy(true);
   try {
-    const data = await AIAdapter.ask({ code: CODE, token: TOKEN, suspectId: currentSuspect, question });
-    PROGRESS = data.progress;
-    renderSide();
+    const data = await AIAdapter.ask({ code: CODE, token: TOKEN, suspectId: suspectAtSend, question });
+    if (data && data.progress) {
+      PROGRESS = data.progress;
+      renderSide();
+    }
+    noteAiMode(data);
+    if (gen !== dialogGen || suspectAtSend !== currentSuspect) return;
     CHAT.push({
       q: data.questionZh || data.question,
       a: data.answerZh || data.answer,
@@ -447,7 +514,9 @@ async function ask(question) {
     });
     renderChat();
   } catch (e) {
-    alert(I18N.serverText(e.message));
+    if (gen === dialogGen) alert(I18N.serverText(e.message));
+  } finally {
+    if (gen === dialogGen) setAskBusy(false);
   }
 }
 

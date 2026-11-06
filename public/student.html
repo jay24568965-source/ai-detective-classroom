@@ -36,7 +36,7 @@
       <strong id="caseName"></strong>
       <span class="badge" id="roomBadge"></span>
       <span class="badge" id="groupBadge"></span>
-      <span class="badge mock" id="aiBadge" data-i18n="badge.mock">演示问答（Mock）</span>
+      <span class="badge mock" id="aiBadge">演示问答（Mock）</span>
       <span class="task muted" id="taskBar">目标：探索场景、收集证据、问询人物</span>
       <button class="secondary" id="btnEvidence" data-i18n="student.evidenceBtn">证据板</button>
       <button class="secondary" id="btnNotes" data-i18n="student.notesBtn">笔记</button>
@@ -70,10 +70,10 @@
   <div class="overlay" id="modalDialog">
     <div class="modal">
       <h2 id="dialogTitle" data-i18n="dialog.title">交谈</h2>
-      <span class="badge mock" data-i18n="badge.mock">演示问答（Mock）</span>
+      <span class="badge mock" id="dialogAiBadge">演示问答（Mock）</span>
       <div class="chat-log" id="chatLog"></div>
       <div class="preset-btns" id="presetBtns"></div>
-      <label data-i18n="dialog.orType">或输入问题（将匹配预设）</label>
+      <label data-i18n="dialog.orType">或输入问题（预设或自由提问）</label>
       <input id="customQ" />
       <div class="row" style="margin-top:0.75rem;">
         <button id="btnAsk" data-i18n="dialog.ask">提问</button>

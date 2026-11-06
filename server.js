@@ -8,6 +8,8 @@ const path = require('path');
 const fs = require('fs');
 const { randomBytes } = require('crypto');
 const { apply: applyCaseLocale, normalizeLang } = require('./public/js/case-locale');
+const { isConfigured } = require('./lib/deepseek');
+const { completeSuspectReply, liveLabel } = require('./lib/ai-interview');
 
 const app = express();
 const PORT = process.env.PORT || 3080;
@@ -751,32 +753,21 @@ function interviewView(lang, suspect, qa, enList, twList, enName, twName, idx, q
   };
 }
 
-/** Mock interview — preset Q&A only; structured for future Convai adapter */
-app.post('/api/student/:code/interview', (req, res) => {
-  const ctx = requireGroup(req, res);
-  if (!ctx) return;
-  const { room, g } = ctx;
-  const raw = loadCaseRaw(room.caseId);
-  const suspectId = req.body.suspectId;
-  const question = String(req.body.question || '').trim();
-  const suspect = (raw.suspects || []).find((s) => s.id === suspectId);
-  if (!suspect) return res.status(404).json({ error: '人物不存在' });
+function rememberTurn(g, suspectId, question, answer) {
+  if (!question || !answer) return;
+  if (!g.chatMemory) g.chatMemory = {};
+  if (!g.chatMemory[suspectId]) g.chatMemory[suspectId] = [];
+  g.chatMemory[suspectId].push({
+    question: String(question).slice(0, 500),
+    answer: String(answer).slice(0, 600),
+  });
+  const turns = g.chatMemory[suspectId];
+  if (turns.length > 6) turns.splice(0, turns.length - 6);
+}
 
-  if (!g.interviewed.includes(suspectId)) g.interviewed.push(suspectId);
-
-  const lang = requestedLang(req);
-  const { qa, enList, twList, enName, twName } = interviewPayload(raw, suspect);
-  const idx = matchMockQA(qa, enList, question, twList);
-  const view = interviewView(lang, suspect, qa, enList, twList, enName, twName, idx, question);
-
-  // Preset answers are author-controlled and must not include the reveal headline.
-  g.logs.push({ at: nowIso(), type: 'interview', suspectId, question: view.questionZh || question });
-  res.json({
-    mode: 'mock',
-    label: view.label,
-    labelEn: 'Demo Q&A (Mock)',
-    labelTw: '示範問答（Mock）',
-    suspectId,
+function interviewBody({ lang, suspect, view, qa, enList, twList, mode, liveText, model, question, progress }) {
+  const shared = {
+    suspectId: suspect.id,
     suspectName: view.suspectName,
     suspectNameZh: suspect.name,
     presets: view.presets,
@@ -784,6 +775,32 @@ app.post('/api/student/:code/interview', (req, res) => {
     presetsEn: enList.map((p) => p && p.q).filter(Boolean),
     presetsTw: twList.map((p) => p && p.q).filter(Boolean),
     qa: view.qaRows,
+    progress,
+  };
+  if (mode === 'live') {
+    return {
+      mode: 'live',
+      label: liveLabel(lang),
+      labelEn: 'Live AI (DeepSeek)',
+      labelTw: '真實 AI（DeepSeek）',
+      ...shared,
+      question,
+      questionZh: question,
+      questionEn: question,
+      questionTw: question,
+      answer: liveText,
+      answerZh: liveText,
+      answerEn: liveText,
+      answerTw: liveText,
+      adapter: { provider: 'deepseek', model: model || 'deepseek-chat', convaiReady: false },
+    };
+  }
+  return {
+    mode: 'mock',
+    label: view.label,
+    labelEn: 'Demo Q&A (Mock)',
+    labelTw: '示範問答（Mock）',
+    ...shared,
     question: view.questionOut,
     questionZh: view.questionZh,
     questionEn: view.questionEn,
@@ -793,8 +810,87 @@ app.post('/api/student/:code/interview', (req, res) => {
     answerEn: view.answerEn,
     answerTw: view.answerTw,
     adapter: { provider: 'mock', convaiReady: false },
-    progress: sanitizeProgress(g, room),
-  });
+  };
+}
+
+/** Suspect interview. DeepSeek when DEEPSEEK_API_KEY is set; otherwise Mock preset Q&A. */
+app.post('/api/student/:code/interview', async (req, res) => {
+  const ctx = requireGroup(req, res);
+  if (!ctx) return;
+  try {
+    const { room, g } = ctx;
+    const raw = loadCaseRaw(room.caseId);
+    const suspectId = req.body.suspectId;
+    const question = String(req.body.question || '').trim().slice(0, 500);
+    const suspect = (raw.suspects || []).find((s) => s.id === suspectId);
+    if (!suspect) return res.status(404).json({ error: '人物不存在' });
+
+    if (!g.interviewed.includes(suspectId)) g.interviewed.push(suspectId);
+
+    const lang = requestedLang(req);
+    const { qa, enList, twList, enName, twName } = interviewPayload(raw, suspect);
+    const idx = matchMockQA(qa, enList, question, twList);
+    const view = interviewView(lang, suspect, qa, enList, twList, enName, twName, idx, question);
+
+    let mode = 'mock';
+    let liveText = '';
+    let model = '';
+    if (question && isConfigured()) {
+      try {
+        const history = (g.chatMemory && g.chatMemory[suspectId]) || [];
+        const live = await completeSuspectReply({
+          lang,
+          raw,
+          suspect,
+          question,
+          history,
+          qa,
+          enList,
+          twList,
+          enName,
+          twName,
+        });
+        if (live && live.text) {
+          mode = 'live';
+          liveText = live.text;
+          model = live.model;
+        }
+      } catch (err) {
+        const code = (err && err.code) || 'error';
+        console.warn(`deepseek interview fallback: ${code}`);
+      }
+    }
+
+    const progress = sanitizeProgress(g, room);
+    const body = interviewBody({
+      lang,
+      suspect,
+      view,
+      qa,
+      enList,
+      twList,
+      mode,
+      liveText,
+      model,
+      question,
+      progress,
+    });
+    const loggedQuestion = mode === 'live' ? question : view.questionZh || question;
+    const loggedAnswer = mode === 'live' ? liveText : view.answerZh;
+    rememberTurn(g, suspectId, question || loggedQuestion, loggedAnswer);
+    g.logs.push({
+      at: nowIso(),
+      type: 'interview',
+      suspectId,
+      question: loggedQuestion,
+      answer: loggedAnswer,
+      mode,
+    });
+    res.json(body);
+  } catch (err) {
+    console.warn('interview handler error');
+    if (!res.headersSent) res.status(500).json({ error: '问询失败' });
+  }
 });
 
 app.get('/api/student/:code/interview/:suspectId/presets', (req, res) => {
