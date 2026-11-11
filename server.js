@@ -849,6 +849,7 @@ app.post('/api/student/:code/interview', async (req, res) => {
           twList,
           enName,
           twName,
+          stage: room.stage,
         });
         if (live && live.text) {
           mode = 'live';

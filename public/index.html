@@ -15,20 +15,24 @@
     <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
   </div>
   <div class="hero">
-    <h1>🔍 <span data-i18n="home.title">AI侦探课堂</span></h1>
+    <h1><span data-i18n="home.title">AI侦探课堂</span></h1>
     <p class="muted" data-i18n="home.subtitle">INT6066 小组项目 MVP · 单轮投票 · Mock 问询 · 物理/化学双案件</p>
   </div>
   <div class="grid2">
-    <div class="card">
+    <article class="choice">
+      <span class="choice-index" aria-hidden="true">01</span>
+      <span class="choice-stamp" data-i18n="home.selected">选中</span>
       <h2 data-i18n="home.teacherTitle">教师控制台</h2>
       <p class="muted" data-i18n="home.teacherBody">创建课堂、选择案件、开启/关闭投票、揭晓结果、导出学习记录。</p>
       <a class="btn" href="/teacher.html" data-i18n="home.teacherBtn">进入教师端</a>
-    </div>
-    <div class="card">
+    </article>
+    <article class="choice">
+      <span class="choice-index" aria-hidden="true">02</span>
+      <span class="choice-stamp" data-i18n="home.selected">选中</span>
       <h2 data-i18n="home.studentTitle">学生 / 小组</h2>
       <p class="muted" data-i18n="home.studentBody">用课堂码与小组 ID 加入，共同操控侦探角色完成调查与最终指认。</p>
       <a class="btn" href="/student.html" data-i18n="home.studentBtn">进入学生端</a>
-    </div>
+    </article>
   </div>
   <p class="muted" data-i18n="home.footer" style="text-align:center;margin-top:2rem;font-size:0.85rem;">
     演示问答（Mock）无需 API Key · 教师答案保存在服务端 · 不提供多轮投票/排除/补发线索

@@ -15,19 +15,23 @@
     <span class="lang-sep" aria-hidden="true">|</span>
     <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
   </div>
-  <div id="setup" class="card" style="margin-top:2rem;">
-    <h1 data-i18n="teacher.heading">教师控制台</h1>
-    <p class="muted" data-i18n="teacher.lead">创建新课堂或恢复已有课堂（本机 localStorage）。</p>
-    <label data-i18n="teacher.name">显示名称</label>
-    <input id="teacherName" value="教师" />
-    <label data-i18n="teacher.case">选择案件</label>
-    <select id="caseSelect"></select>
-    <div class="row" style="margin-top:1rem;">
-      <button id="btnCreate" data-i18n="teacher.create">创建课堂</button>
-      <button class="secondary" id="btnRestore" data-i18n="teacher.restore">恢复上次</button>
-      <a class="btn secondary" href="/" data-i18n="teacher.home">返回首页</a>
+  <div id="setup" class="scroll-window">
+    <div class="scroll-roll" aria-hidden="true"></div>
+    <div class="scroll-sheet">
+      <h1 data-i18n="teacher.heading">教师控制台</h1>
+      <p class="muted" data-i18n="teacher.lead">创建新课堂或恢复已有课堂（本机 localStorage）。</p>
+      <label data-i18n="teacher.name">显示名称</label>
+      <input id="teacherName" value="教师" />
+      <label data-i18n="teacher.case">选择案件</label>
+      <select id="caseSelect"></select>
+      <div class="row">
+        <button id="btnCreate" data-i18n="teacher.create">创建课堂</button>
+        <button class="secondary" id="btnRestore" data-i18n="teacher.restore">恢复上次</button>
+        <a class="btn secondary" href="/" data-i18n="teacher.home">返回首页</a>
+      </div>
+      <div id="setupMsg" class="flash" style="display:none;"></div>
     </div>
-    <div id="setupMsg" class="flash" style="display:none;"></div>
+    <div class="scroll-roll" aria-hidden="true"></div>
   </div>
 
   <div id="console" class="teacher-layout" style="display:none;">

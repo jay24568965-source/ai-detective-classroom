@@ -16,6 +16,8 @@ let QA_CACHE = [];
 let CHAT = [];
 let LAST_REVEAL = null;
 let LAST_ITEM = null;
+let announcedStage = 0;
+let pendingActCue = 0;
 
 function $(id) { return document.getElementById(id); }
 function openModal(id) {
@@ -111,7 +113,10 @@ function boot(data) {
   applyGameChrome();
   renderBrief();
   openModal('modalBrief');
-  $('btnBriefOk').onclick = () => closeModal('modalBrief');
+  $('btnBriefOk').onclick = () => {
+    closeModal('modalBrief');
+    if (pendingActCue >= 2) playActCue(pendingActCue);
+  };
 
   engine = new GameEngine($('gameCanvas'), {
     onInteract: handleInteract,
@@ -133,6 +138,7 @@ function boot(data) {
   if (pollTimer) clearInterval(pollTimer);
   posTimer = setInterval(syncPos, 2000);
   pollTimer = setInterval(pollState, 2500);
+  syncActCue(STATE.stage, true);
 }
 
 function applyGameChrome() {
@@ -199,12 +205,72 @@ async function pollState() {
     captureReveal(data);
     renderSide();
     updateTask();
+    syncActCue(STATE.stage, false);
     if (STATE.revealed && !wasRevealed) {
       showReveal(data);
     }
   } catch (e) {
     console.warn(e);
   }
+}
+
+function stageDisplayName(stage) {
+  const n = Number(stage) || 1;
+  const row = ((CASE && CASE.stages) || []).find((s) => Number(s.id) === n);
+  if (row && row.name) return row.name;
+  return I18N.t('teacher.act', { n });
+}
+
+function playActCue(stage) {
+  const brief = $('modalBrief');
+  if ((brief && brief.classList.contains('open')) || document.hidden) {
+    pendingActCue = Number(stage) || 0;
+    return;
+  }
+  pendingActCue = 0;
+  const root = $('actCue');
+  if (!root) return;
+  const kicker = $('actCueKicker');
+  const name = $('actCueName');
+  if (kicker) kicker.textContent = I18N.t('actCue.kicker');
+  if (name) name.textContent = stageDisplayName(stage);
+  root.hidden = false;
+  root.classList.remove('is-on');
+  void root.offsetWidth;
+  root.classList.add('is-on');
+  clearTimeout(playActCue.timer);
+  playActCue.timer = setTimeout(() => {
+    root.classList.remove('is-on');
+    root.hidden = true;
+  }, 3400);
+}
+
+function hideActCue() {
+  pendingActCue = 0;
+  const root = $('actCue');
+  if (!root) return;
+  clearTimeout(playActCue.timer);
+  root.classList.remove('is-on');
+  root.hidden = true;
+}
+
+/** Act 1 is the opening and stays quiet. Later acts get a center cue that fades. */
+function syncActCue(stage, entering) {
+  const n = Number(stage) || 1;
+  if (n < 2) {
+    const wasLater = announcedStage >= 2;
+    announcedStage = n;
+    if (!entering && wasLater) hideActCue();
+    return;
+  }
+  if (entering) {
+    announcedStage = n;
+    playActCue(n);
+    return;
+  }
+  if (n === announcedStage) return;
+  announcedStage = n;
+  playActCue(n);
 }
 
 function updateTask(override) {
@@ -646,10 +712,19 @@ function refreshOpenModals() {
   if ($('modalResult').classList.contains('open')) showReveal(null);
 }
 
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && pendingActCue >= 2) playActCue(pendingActCue);
+});
+
 I18N.onChange(() => {
   if (!CASE_PACK || !engine) return;
   CASE = I18N.localizeCase(CASE_PACK, I18N.getLang());
   engine.relocalize(CASE);
   applyGameChrome();
   refreshOpenModals();
+  const cue = $('actCue');
+  if (cue && !cue.hidden && announcedStage >= 2) {
+    $('actCueKicker').textContent = I18N.t('actCue.kicker');
+    $('actCueName').textContent = stageDisplayName(announcedStage);
+  }
 });
