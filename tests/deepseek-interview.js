@@ -33,7 +33,7 @@ global.fetch = (url, opts) => {
 };
 
 const { app } = require('../server');
-const { clipAnswer, replyLeaks, buildInterviewMessages } = require('../lib/ai-interview');
+const { clipAnswer, replyLeaks, buildInterviewMessages, releasedEvidence } = require('../lib/ai-interview');
 const { isConfigured } = require('../lib/deepseek');
 
 const PORT = 3101;
@@ -254,6 +254,44 @@ async function main() {
     ''
   );
 
+  const witness = physics.suspects.find((s) => s.id === 'C');
+  const witness1 = systemFor(physics, witness, 1, 'zh');
+  const chem2 = systemFor(chemistry, zhou, 2, 'zh');
+  function evidenceIds(raw, stage) {
+    return releasedEvidence(raw, stage).map((ev) => ev.id).join(',');
+  }
+  record(
+    'ds-useful-clue',
+    'act 1 NPCs can state a scripted clue; later measurements stay locked',
+    phys1.includes('Scripted clues this character can say now') &&
+      phys1.includes('没有超过限速50') &&
+      phys1.includes('I remember not exceeding the 50 limit before I braked.') &&
+      witness1.includes('小动物') &&
+      !witness1.includes('Δt_A') &&
+      !witness1.includes('2.5') &&
+      phys2.includes('没有超过限速50') &&
+      phys2.includes('Δt_A = 2.5 s') &&
+      phys2.includes('s_A = 25 m') &&
+      !phys2.includes('20 m/s') &&
+      !phys2.includes('72 km/h') &&
+      chem1.includes('我帮忙整理过卫生间附近的清洁用品') &&
+      !chem1.includes('105 ppm') &&
+      chem2.includes('模拟显色检验') &&
+      !chem2.includes('105 ppm'),
+    ''
+  );
+  record(
+    'ds-unlock-order',
+    'evidence unlocks in the case order and calculated rows stay out',
+    evidenceIds(physics, 1) === 'E01,E02,E03,E04,E05,E06' &&
+      evidenceIds(physics, 2) === 'E01,E02,E03,E04,E05,E06,E07,E08' &&
+      evidenceIds(physics, 3) === 'E01,E02,E03,E04,E05,E06,E07,E08,E09,E10,E11,E12' &&
+      evidenceIds(chemistry, 1) === 'C-E01,C-E02,C-E03,C-E04' &&
+      evidenceIds(chemistry, 2) === 'C-E01,C-E02,C-E03,C-E04,C-E05,C-E06,C-E07' &&
+      evidenceIds(chemistry, 3) === 'C-E01,C-E02,C-E03,C-E04,C-E05,C-E06,C-E07,C-E08',
+    evidenceIds(physics, 3)
+  );
+
   const chemEn1 = systemFor(chemistry, zhou, 1, 'en');
   const chemEn3 = systemFor(chemistry, zhou, 3, 'en');
   record(
@@ -275,6 +313,21 @@ async function main() {
   const server = app.listen(PORT);
   try {
     fetchImpl = liveFetch('我记得制动前没有超过限速，具体数字要以记录为准。', 'deepseek-chat');
+    const health = await req('GET', '/api/health');
+    const healthBlob = JSON.stringify(health.json);
+    record(
+      'ds-health',
+      'health reports live DeepSeek and does not include the key',
+      health.status === 200 &&
+        health.json.ok &&
+        health.json.mode === 'live' &&
+        health.json.adapter &&
+        health.json.adapter.provider === 'deepseek' &&
+        health.json.adapter.model === 'deepseek-chat' &&
+        !healthBlob.includes(KEY) &&
+        !healthBlob.includes('sk-'),
+      health.json.mode
+    );
     const room = await joinPhysics();
     const presets = await req('GET', `/api/student/${room.code}/interview/A/presets`, null, { 'x-group-token': room.token });
     record(
@@ -539,7 +592,10 @@ async function main() {
       i18n.includes("'badge.live': '真实AI（DeepSeek）'") &&
         i18n.includes("'badge.live': 'Live AI (DeepSeek)'") &&
         i18n.includes("'badge.live': '真實 AI（DeepSeek）'") &&
-        fs.readFileSync(path.join(__dirname, '..', 'public/js/student.js'), 'utf8').includes('noteAiMode'),
+        i18n.includes('Questions are answered by DeepSeek') &&
+        i18n.includes('問詢由 DeepSeek 作答') &&
+        fs.readFileSync(path.join(__dirname, '..', 'public/js/student.js'), 'utf8').includes('noteAiMode') &&
+        fs.readFileSync(path.join(__dirname, '..', 'public/js/student.js'), 'utf8').includes("fetch('/api/health')"),
       ''
     );
   } finally {

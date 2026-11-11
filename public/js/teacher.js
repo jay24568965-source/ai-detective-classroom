@@ -225,7 +225,7 @@ async function refresh() {
     if (e.status === 404 || e.status === 403) {
       clearInterval(pollTimer);
       document.getElementById('console').style.display = 'none';
-      document.getElementById('setup').style.display = 'grid';
+      document.getElementById('setup').style.display = '';
     }
   }
 }

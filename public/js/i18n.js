@@ -10,6 +10,7 @@
     zh: {
       'home.title': 'AI侦探课堂',
       'home.subtitle': 'INT6066 小组项目 MVP · 单轮投票 · Mock 问询 · 物理/化学双案件',
+      'home.subtitle.live': 'INT6066 小组项目 MVP · 单轮投票 · DeepSeek 问询 · 物理/化学双案件',
       'home.teacherTitle': '教师控制台',
       'home.teacherBody': '创建课堂、选择案件、开启/关闭投票、揭晓结果、导出学习记录。',
       'home.teacherBtn': '进入教师端',
@@ -18,6 +19,7 @@
       'home.studentBtn': '进入学生端',
       'home.selected': '选中',
       'home.footer': '演示问答（Mock）无需 API Key · 教师答案保存在服务端 · 不提供多轮投票/排除/补发线索',
+      'home.footer.live': '问询由 DeepSeek 作答 · 教师答案保存在服务端 · 不提供多轮投票/排除/补发线索',
       'teacher.docTitle': '教师控制台 · AI侦探课堂',
       'teacher.heading': '教师控制台',
       'teacher.lead': '创建新课堂或恢复已有课堂（本机 localStorage）。',
@@ -158,6 +160,7 @@
     en: {
       'home.title': 'AI Detective Classroom',
       'home.subtitle': 'INT6066 group project MVP · single vote · mock Q&A · physics and chemistry cases',
+      'home.subtitle.live': 'INT6066 group project MVP · single vote · DeepSeek Q&A · physics and chemistry cases',
       'home.teacherTitle': 'Teacher console',
       'home.teacherBody': 'Create a room, choose a case, open or close voting, reveal results, and export the learning log.',
       'home.teacherBtn': 'Open teacher page',
@@ -166,6 +169,7 @@
       'home.studentBtn': 'Open student page',
       'home.selected': 'Selected',
       'home.footer': 'Demo Q&A (Mock) needs no API key · the answer key stays on the server · no extra rounds, eliminations, or bonus clues',
+      'home.footer.live': 'Questions are answered by DeepSeek · the answer key stays on the server · no extra rounds, eliminations, or bonus clues',
       'teacher.docTitle': 'Teacher console · AI Detective Classroom',
       'teacher.heading': 'Teacher console',
       'teacher.lead': 'Create a room or restore the last one (saved in localStorage on this device).',
@@ -306,6 +310,7 @@
     'zh-TW': {
       'home.title': 'AI偵探課堂',
       'home.subtitle': 'INT6066 小組專案 MVP · 單輪投票 · Mock 問詢 · 物理／化學雙案件',
+      'home.subtitle.live': 'INT6066 小組專案 MVP · 單輪投票 · DeepSeek 問詢 · 物理／化學雙案件',
       'home.teacherTitle': '教師控制台',
       'home.teacherBody': '建立課堂、選擇案件、開啟／關閉投票、揭曉結果、匯出學習紀錄。',
       'home.teacherBtn': '進入教師端',
@@ -314,6 +319,7 @@
       'home.studentBtn': '進入學生端',
       'home.selected': '選中',
       'home.footer': '示範問答（Mock）無需 API Key · 教師答案保存在伺服器 · 不提供多輪投票／排除／補發線索',
+      'home.footer.live': '問詢由 DeepSeek 作答 · 教師答案保存在伺服器 · 不提供多輪投票／排除／補發線索',
       'teacher.docTitle': '教師控制台 · AI偵探課堂',
       'teacher.heading': '教師控制台',
       'teacher.lead': '建立新課堂或恢復已有課堂（本機 localStorage）。',

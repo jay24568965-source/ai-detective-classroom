@@ -38,7 +38,7 @@ npm test
 1. 打开「学生端」，输入课堂码、自定小组 ID（如 `G1`）与显示名后加入。
 2. 同组共用一个侦探角色；令牌保存在 `localStorage`（`ai-detective-student`），刷新点「用本机令牌重连」。
 3. **点击或轻触地面**移动侦探；**点击线索、人物或门**会先走过去再调查或交谈（已经站在旁边则立刻打开）。手机和平板同样点按，不再使用 WASD 或虚拟方向键。
-4. 调查物品 → 证据板；问询 5 名嫌疑人。未配置 DeepSeek 时界面标注 **演示问答（Mock）**；某次提问由 DeepSeek 成功作答后改为 **真实AI（DeepSeek）**。
+4. 调查物品 → 证据板；问询 5 名嫌疑人。未配置 DeepSeek 时首页页脚和学生角标为 **演示问答（Mock）**。`/api/health` 的 `mode` 为 `live` 时，首页副标题、页脚和学生角标改为 DeepSeek。某次提问超时或退回 Mock 时，这一问的界面仍可显示 Mock。
 5. 在工作台做计算/笔记；投票开启后回大厅/指挥室找 **调查主持人** 提交 **唯一一次** 最终指认（证据 + 依据）。
 6. 提交后只显示「已提交，等待揭晓」；揭晓后显示 **合格 / 不合格 / 未提交**。
 
@@ -62,7 +62,7 @@ npm test
 嫌疑人提问（预设按钮或自由输入）都走服务端 `POST /api/student/:code/interview`。
 
 - **未设置 `DEEPSEEK_API_KEY`**：使用案件里的 **Mock 预设问答**，可离线演示。界面保持「演示问答（Mock）」/「示範問答（Mock）」/「Demo Q&A (Mock)」。
-- **已设置密钥**：服务端用 [DeepSeek](https://api.deepseek.com) 的 OpenAI 兼容接口 `POST /chat/completions`。提示词按课堂当前幕次研读剧本：该人物的人物卡与预设问答，加上本幕及更早幕已解锁证据的学生可见事实（简体 / 繁體 / English 跟随 `?lang=` 或 `x-lang`）。稍后才解锁的测量不会写进更早幕的提示。标准答案、揭晓摘要、教师注释，以及计算结果类证据（终局重建数字）始终不进入提示。成功时响应为 `mode: "live"`，`adapter.provider` 为 `deepseek`，界面改为「真实AI（DeepSeek）」/「真實 AI（DeepSeek）」/「Live AI (DeepSeek)」。
+- **已设置密钥**：服务端用 [DeepSeek](https://api.deepseek.com) 的 OpenAI 兼容接口 `POST /chat/completions`。`GET /api/health` 返回 `mode: "live"` 和 `adapter.provider: "deepseek"`（不含密钥）。首页副标题、页脚和学生角标据此显示 DeepSeek。提示词按课堂当前幕次研读剧本：该人物的人物卡与预设问答（角色可以据此说出线索），加上本幕及更早幕已解锁证据的学生可见事实（简体 / 繁體 / English 跟随 `?lang=` 或 `x-lang`）。稍后才解锁的测量不会写进更早幕的提示。标准答案、揭晓摘要、教师注释，以及计算结果类证据（终局重建数字）始终不进入提示，模型也不被要求把已公开测量算成终局速度。成功时响应为 `mode: "live"`，`adapter.provider` 为 `deepseek`，界面为「真实AI（DeepSeek）」/「真實 AI（DeepSeek）」/「Live AI (DeepSeek)」。
 - **超时、4xx/5xx 或空回复**：这一问退回 Mock，仍返回答案，界面保持 Mock 文案。默认超时约 16 秒。
 - 模型名可选，环境变量 `DEEPSEEK_MODEL`，默认 `deepseek-chat`。
 - 密钥只放在运行环境里。不要写进前端、案件 JSON、git 或 `localStorage`。本地可复制 `.env.example` 为 `.env`（`.env` 已被忽略）。
