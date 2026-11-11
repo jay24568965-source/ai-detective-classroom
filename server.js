@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const { randomBytes } = require('crypto');
 const { apply: applyCaseLocale, normalizeLang } = require('./public/js/case-locale');
-const { isConfigured } = require('./lib/deepseek');
+const { isConfigured, modelName } = require('./lib/deepseek');
 const { completeSuspectReply, liveLabel } = require('./lib/ai-interview');
 
 const app = express();
@@ -182,8 +182,22 @@ function ensureGroupProgress(g) {
   if (!g.result) g.result = null;
 }
 
+function aiStatus() {
+  if (isConfigured()) {
+    return {
+      mode: 'live',
+      adapter: { provider: 'deepseek', model: modelName(), convaiReady: false },
+    };
+  }
+  return {
+    mode: 'mock',
+    adapter: { provider: 'mock', convaiReady: false },
+  };
+}
+
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, rooms: rooms.size, time: nowIso() });
+  const status = aiStatus();
+  res.json({ ok: true, rooms: rooms.size, time: nowIso(), mode: status.mode, adapter: status.adapter });
 });
 
 app.get('/api/cases', (req, res) => {

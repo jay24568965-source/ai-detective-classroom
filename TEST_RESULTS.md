@@ -1,8 +1,8 @@
 # TEST_RESULTS
 
-Generated: 2026-11-06T10:55:31.517Z (script clock; report to user in Asia/Shanghai).
+Generated: 2026-11-11T16:34:39.564Z (script clock; report to user in Asia/Shanghai).
 
-Automated: 89/89 passed.
+Automated: 93/93 passed.
 
 | ID | Result | Name | Detail |
 |----|--------|------|--------|
@@ -14,8 +14,8 @@ Automated: 89/89 passed.
 | move-6 | PASS | clicking a distant clue starts a walk toward it | clue |
 | move-7 | PASS | walking up to a clue then opens it | item |
 | move-8 | PASS | clicking the host in range opens the host | host |
-| 0 | PASS | health |  |
-| physics-1a | PASS | create room physics | 1BA1F9 |
+| 0 | PASS | health | mock |
+| physics-1a | PASS | create room physics | 41784C |
 | physics-1b | PASS | student join |  |
 | physics-9a | PASS | student case omits correctSuspectId |  |
 | physics-title | PASS | case title loaded | 意外的急刹车 |
@@ -40,7 +40,7 @@ Automated: 89/89 passed.
 | physics-12b | PASS | teacher auth required |  |
 | physics-stage | PASS | E07 locked until stage 2 | early=false late=true |
 | physics-isol | PASS | case id matches selection | physics |
-| chemistry-1a | PASS | create room chemistry | B9A009 |
+| chemistry-1a | PASS | create room chemistry | ECF51D |
 | chemistry-1b | PASS | student join |  |
 | chemistry-9a | PASS | student case omits correctSuspectId |  |
 | chemistry-title | PASS | case title loaded | 台风夜老宅 |
@@ -72,6 +72,10 @@ Automated: 89/89 passed.
 | static-/js/i18n.js | PASS | serves /js/i18n.js | 200 |
 | static-/js/case-locale.js | PASS | serves /js/case-locale.js | 200 |
 | lang-ui | PASS | language toggle on home, teacher, student |  |
+| ui-buttons | PASS | buttons are rounded solids and the photo backgrounds are wired |  |
+| ui-live-copy | PASS | homepage has DeepSeek strings for live mode and Mock strings for offline mode |  |
+| asset/img/scroll.png | PASS | serves /img/scroll.png | image/png |
+| asset/img/kraft-paper.png | PASS | serves /img/kraft-paper.png | image/png |
 | lang-1 | PASS | default case list stays Chinese | 意外的急刹车 |
 | lang-2 | PASS | lang=en case list is English | The Unexpected Hard Brake |
 | lang-3 | PASS | default join case is Chinese and hides the answer | 意外的急刹车 |
@@ -102,7 +106,7 @@ Automated: 89/89 passed.
 - [ ] Opening a panel cancels the walk; closing it allows clicks again
 - [ ] Tap the scene on a phone-width viewport (no WASD, no D-pad)
 - [ ] 简体 | 繁體 | EN on home, teacher, and student; choice survives refresh (ai-detective-lang)
-- [ ] UI label 演示问答（Mock） when DeepSeek is unset or a turn falls back; 真实AI（DeepSeek） only after a live reply
+- [ ] Homepage footer and student badge say DeepSeek when /api/health mode is live; they say Mock when the key is unset or a turn falls back
 - [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal
 - [ ] No UI for second round / eliminate / bonus clues
 - [ ] Chemistry C-E05 is the tablet color test (no disputed-subject or alcohol-wipe wording)

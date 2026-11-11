@@ -449,6 +449,8 @@ async function langChecks() {
 }
 
 async function main() {
+  const fs = require('fs');
+  const path = require('path');
   require('./click-move').run(record);
 
   const server = await new Promise((resolve) => {
@@ -457,7 +459,13 @@ async function main() {
 
   try {
     const health = await req('GET', '/api/health');
-    record('0', 'health', health.status === 200 && health.json.ok, '');
+    const healthBlob = JSON.stringify(health.json);
+    record(
+      '0',
+      'health',
+      health.status === 200 && health.json.ok && health.json.mode === 'mock' && health.json.adapter && health.json.adapter.provider === 'mock' && !health.json.adapter.model && !healthBlob.includes('sk-') && !healthBlob.includes('DEEPSEEK_API_KEY'),
+      health.json.mode || ''
+    );
 
     await flowForCase('physics', 'A', 'B');
     await flowForCase('chemistry', 'zhou', 'he');
@@ -484,6 +492,37 @@ async function main() {
       [home, teacherPage, studentPage].every((r) => r.raw.includes('id="langSwitch"') && r.raw.includes('data-set-lang="zh-TW"') && r.raw.includes('data-set-lang="en"') && r.raw.includes('繁體') && r.raw.includes('/js/i18n.js')),
       ''
     );
+    const css = fs.readFileSync(path.join(__dirname, '..', 'public/css/common.css'), 'utf8');
+    const i18n = fs.readFileSync(path.join(__dirname, '..', 'public/js/i18n.js'), 'utf8');
+    record(
+      'ui-buttons',
+      'buttons are rounded solids and the photo backgrounds are wired',
+      !css.includes('clip-path: polygon') &&
+        css.includes('border-radius: 10px') &&
+        css.includes('/img/scroll.png') &&
+        css.includes('/img/kraft-paper.png') &&
+        !teacherPage.raw.includes('scroll-roll') &&
+        studentPage.raw.includes('kraft-sheet') &&
+        home.raw.includes('/js/home-status.js') &&
+        home.raw.includes('id="homeFooter"'),
+      ''
+    );
+    record(
+      'ui-live-copy',
+      'homepage has DeepSeek strings for live mode and Mock strings for offline mode',
+      i18n.includes("'home.footer.live': '问询由 DeepSeek 作答") &&
+        i18n.includes("'home.footer.live': 'Questions are answered by DeepSeek") &&
+        i18n.includes("'home.footer.live': '問詢由 DeepSeek 作答") &&
+        i18n.includes("'home.footer': '演示问答（Mock）") &&
+        i18n.includes('badge.mock') &&
+        i18n.includes('badge.live'),
+      ''
+    );
+    for (const asset of ['/img/scroll.png', '/img/kraft-paper.png']) {
+      const img = await req('GET', asset);
+      const type = String(img.headers['content-type'] || '');
+      record('asset' + asset, 'serves ' + asset, img.status === 200 && type.includes('image/png'), type || String(img.status));
+    }
 
     await langChecks();
     await tabletSubjectChecks();
@@ -492,8 +531,6 @@ async function main() {
   }
 
   const failed = results.filter((r) => !r.pass);
-  const fs = require('fs');
-  const path = require('path');
   const md = [
     '# TEST_RESULTS',
     '',
@@ -511,7 +548,7 @@ async function main() {
     '- [ ] Opening a panel cancels the walk; closing it allows clicks again',
     '- [ ] Tap the scene on a phone-width viewport (no WASD, no D-pad)',
     '- [ ] 简体 | 繁體 | EN on home, teacher, and student; choice survives refresh (ai-detective-lang)',
-    '- [ ] UI label 演示问答（Mock） when DeepSeek is unset or a turn falls back; 真实AI（DeepSeek） only after a live reply',
+    '- [ ] Homepage footer and student badge say DeepSeek when /api/health mode is live; they say Mock when the key is unset or a turn falls back',
     '- [ ] After submit, UI shows only 已提交，等待揭晓 until teacher reveal',
     '- [ ] No UI for second round / eliminate / bonus clues',
     '- [ ] Chemistry C-E05 is the tablet color test (no disputed-subject or alcohol-wipe wording)',

@@ -35,86 +35,43 @@ h1, h2, .choice h2 {
   letter-spacing: 0.01em;
 }
 
-/* Burnt-edge paper. Char spots sit on all four sides; the outline tracks the control. */
+/* Solid rounded rectangles. Primary, secondary, danger, and ok keep their roles. */
 button, .btn {
-  --paper-face: #f6e6c8;
-  position: relative;
   display: inline-block;
-  background-color: var(--paper-face);
+  background: #f4e6c8;
   color: var(--ink);
-  border: none;
-  border-radius: 2px;
-  padding: 0.58rem 1.05rem;
+  border: 2px solid #5c3a22;
+  border-radius: 10px;
+  padding: 0.52rem 1.05rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-decoration: none;
   cursor: pointer;
   line-height: 1.25;
-  clip-path: polygon(
-    1% 9%, 7% 1%, 16% 5%, 28% 0%, 41% 4%, 54% 0%, 67% 5%, 79% 0%, 90% 4%, 100% 8%,
-    98% 22%, 100% 38%, 97% 54%, 100% 70%, 98% 86%, 100% 96%,
-    90% 100%, 76% 95%, 62% 100%, 48% 95%, 34% 100%, 20% 96%, 8% 100%, 0% 92%,
-    2% 76%, 0% 58%, 3% 40%, 0% 22%
-  );
-  background-image:
-    radial-gradient(ellipse 16px 11px at 0% 28%, rgba(18, 8, 2, 0.92) 0 46%, transparent 48%),
-    radial-gradient(ellipse 18px 10px at 10% 0%, rgba(32, 14, 4, 0.88) 0 48%, transparent 50%),
-    radial-gradient(ellipse 14px 10px at 34% 0%, rgba(48, 22, 8, 0.72) 0 46%, transparent 48%),
-    radial-gradient(ellipse 18px 11px at 62% 0%, rgba(24, 10, 3, 0.86) 0 48%, transparent 50%),
-    radial-gradient(ellipse 16px 10px at 88% 0%, rgba(20, 8, 2, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 14px 14px at 100% 24%, rgba(18, 8, 2, 0.92) 0 46%, transparent 48%),
-    radial-gradient(ellipse 14px 12px at 100% 62%, rgba(28, 12, 4, 0.84) 0 46%, transparent 48%),
-    radial-gradient(ellipse 16px 12px at 100% 90%, rgba(18, 8, 2, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 18px 11px at 78% 100%, rgba(24, 10, 3, 0.88) 0 48%, transparent 50%),
-    radial-gradient(ellipse 16px 10px at 48% 100%, rgba(40, 18, 6, 0.75) 0 46%, transparent 48%),
-    radial-gradient(ellipse 18px 12px at 16% 100%, rgba(18, 8, 2, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 14px 14px at 0% 78%, rgba(22, 10, 3, 0.88) 0 46%, transparent 48%),
-    linear-gradient(180deg, rgba(255, 250, 236, 0.55), rgba(150, 100, 48, 0.14));
-  box-shadow:
-    inset 7px 0 8px -7px rgba(20, 8, 2, 0.95),
-    inset -7px 0 8px -7px rgba(20, 8, 2, 0.95),
-    inset 0 7px 8px -7px rgba(20, 8, 2, 0.8),
-    inset 0 -7px 8px -7px rgba(20, 8, 2, 0.9);
-  transition: transform 0.16s ease, filter 0.16s ease;
+  box-shadow: 0 1px 2px rgba(42, 26, 12, 0.18);
+  transition: transform 0.16s ease, filter 0.16s ease, background-color 0.16s ease;
 }
 button:hover, .btn:hover,
 button:focus-visible, .btn:focus-visible {
-  transform: translateY(-2px) rotate(-0.3deg);
-  filter: brightness(1.06);
+  transform: translateY(-1px);
+  filter: brightness(1.05);
   outline: 2px solid #e0b15a;
   outline-offset: 3px;
 }
 button.secondary, .btn.secondary {
-  --paper-face: #e7d8be;
+  background: #e4d3b4;
   color: var(--ink);
+  border-color: #8a6a48;
 }
 button.danger {
-  --paper-face: #7a2e22;
+  background: #7a2e22;
   color: #fff8f3;
-  background-image:
-    radial-gradient(ellipse 16px 11px at 0% 30%, rgba(18, 6, 4, 0.95) 0 48%, transparent 50%),
-    radial-gradient(ellipse 18px 10px at 18% 0%, rgba(20, 6, 4, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 16px 10px at 70% 0%, rgba(12, 4, 2, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 14px 14px at 100% 30%, rgba(12, 4, 2, 0.95) 0 46%, transparent 48%),
-    radial-gradient(ellipse 16px 12px at 100% 78%, rgba(20, 6, 4, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 18px 11px at 62% 100%, rgba(12, 4, 2, 0.92) 0 48%, transparent 50%),
-    radial-gradient(ellipse 16px 12px at 12% 100%, rgba(20, 6, 4, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 14px 14px at 0% 72%, rgba(12, 4, 2, 0.95) 0 46%, transparent 48%),
-    linear-gradient(180deg, rgba(255, 220, 200, 0.18), rgba(40, 8, 6, 0.2));
+  border-color: #4a1c16;
 }
 button.ok {
-  --paper-face: #2f5d38;
+  background: #2f5d38;
   color: #f3fff6;
-  background-image:
-    radial-gradient(ellipse 16px 11px at 0% 30%, rgba(6, 16, 8, 0.95) 0 48%, transparent 50%),
-    radial-gradient(ellipse 18px 10px at 20% 0%, rgba(4, 14, 6, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 16px 10px at 72% 0%, rgba(4, 12, 6, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 14px 14px at 100% 28%, rgba(4, 12, 6, 0.95) 0 46%, transparent 48%),
-    radial-gradient(ellipse 16px 12px at 100% 76%, rgba(6, 16, 8, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 18px 11px at 60% 100%, rgba(4, 12, 6, 0.92) 0 48%, transparent 50%),
-    radial-gradient(ellipse 16px 12px at 14% 100%, rgba(6, 16, 8, 0.9) 0 48%, transparent 50%),
-    radial-gradient(ellipse 14px 14px at 0% 70%, rgba(4, 12, 6, 0.95) 0 46%, transparent 48%),
-    linear-gradient(180deg, rgba(220, 255, 226, 0.16), rgba(4, 20, 8, 0.2));
+  border-color: #1a3a22;
 }
 button:disabled { opacity: 0.55; cursor: not-allowed; filter: none; transform: none; }
 
@@ -162,6 +119,18 @@ label { display: block; margin: 0.7rem 0 0.28rem; color: var(--muted); font-size
   color: #1c120a;
   border: 1px solid #8a6840;
 }
+#join.kraft-sheet {
+  width: min(560px, calc(100% - 1.5rem));
+  max-width: 560px;
+  margin: 3rem auto 1.6rem;
+  padding: clamp(2.5rem, 9%, 3.3rem) clamp(1.7rem, 8%, 2.6rem) clamp(2.1rem, 8%, 2.8rem);
+  color: var(--ink);
+  background: url("/img/kraft-paper.png") center / 100% 100% no-repeat;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.45));
+}
 .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
 .muted { color: var(--muted); }
 .badge {
@@ -196,9 +165,8 @@ label { display: block; margin: 0.7rem 0 0.28rem; color: var(--muted); font-size
 }
 .lang-switch button {
   background: transparent;
-  background-image: none;
   color: #e6d3b4;
-  clip-path: none;
+  border: none;
   box-shadow: none;
   padding: 0.2rem 0.48rem;
   border-radius: 999px;
@@ -322,47 +290,21 @@ label { display: block; margin: 0.7rem 0 0.28rem; color: var(--muted); font-size
 .choice:focus-within .choice-stamp { opacity: 1; }
 
 .scroll-window {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
-  max-width: 840px;
-  margin: 2.4rem auto 2rem;
-  padding: 0 0.75rem;
-  align-items: stretch;
-  filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.5));
-}
-.scroll-roll {
-  border-radius: 22px;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      #2a1a0e 0 3px,
-      #6a4828 3px 6px,
-      #f0e0be 6px 9px,
-      #c6a56a 9px 12px,
-      #5a3c20 12px 16px,
-      #24160e 16px 20px
-    );
-  box-shadow:
-    inset 0 0 0 1px rgba(40, 22, 10, 0.55),
-    inset 8px 0 10px rgba(255, 236, 200, 0.18);
+  width: min(1080px, calc(100vw - 1.25rem));
+  margin: 4.4rem auto 2rem;
+  padding: clamp(4.6rem, 10.5%, 7.4rem) clamp(3.5rem, 16%, 11rem) clamp(4.8rem, 12.5%, 8.2rem);
+  color: var(--ink);
+  background: url("/img/scroll.png") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 22px 26px rgba(0, 0, 0, 0.55));
 }
 .scroll-sheet {
   position: relative;
   z-index: 1;
-  margin: 16px -10px;
-  padding: 1.55rem 1.7rem 1.35rem;
+  margin: 0;
+  padding: 0.1rem 0.15rem 0;
   color: var(--ink);
-  background-color: #efd7ae;
-  background-image:
-    url("/img/parchment.svg"),
-    radial-gradient(ellipse at 50% 0%, rgba(255, 248, 230, 0.55), transparent 58%),
-    radial-gradient(ellipse at 0% 100%, rgba(92, 48, 16, 0.18), transparent 42%),
-    radial-gradient(ellipse at 100% 80%, rgba(70, 32, 10, 0.16), transparent 40%),
-    linear-gradient(180deg, rgba(120, 72, 28, 0.18), transparent 12%, transparent 88%, rgba(80, 42, 14, 0.22));
-  background-size: 220px 220px, auto, auto, auto, auto;
-  box-shadow:
-    inset 0 0 0 1px rgba(120, 78, 32, 0.28),
-    inset 0 0 50px rgba(120, 70, 24, 0.12);
+  background: transparent;
+  box-shadow: none;
 }
 .scroll-sheet h1 {
   margin: 0 0 0.35rem;
@@ -373,9 +315,10 @@ label { display: block; margin: 0.7rem 0 0.28rem; color: var(--muted); font-size
 .scroll-sheet label { color: #5c4030; }
 .scroll-sheet .row { margin-top: 1rem; }
 @media (max-width: 640px) {
-  .scroll-window { grid-template-columns: 1fr; }
-  .scroll-roll { display: none; }
-  .scroll-sheet { margin: 0; }
+  .scroll-window {
+    margin-top: 4.6rem;
+    padding: 4.4rem 2.5rem 4.6rem;
+  }
 }
 
 .flash {

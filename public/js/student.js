@@ -447,6 +447,7 @@ function renderHost() {
 }
 
 let aiLive = false;
+let sawInterviewMode = false;
 let asking = false;
 let dialogGen = 0;
 
@@ -462,12 +463,26 @@ function syncAiBadge() {
 }
 
 function noteAiMode(data) {
+  sawInterviewMode = true;
   if (window.AIAdapter && typeof AIAdapter.applyServer === 'function') {
     aiLive = AIAdapter.applyServer(data) === 'live';
   } else {
     aiLive = !!(data && data.mode === 'live' && data.adapter && data.adapter.provider === 'deepseek');
   }
   syncAiBadge();
+}
+
+function refreshAiAvailability() {
+  fetch('/api/health')
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (!data || sawInterviewMode) return;
+      const live = !!(data.mode === 'live' && data.adapter && data.adapter.provider === 'deepseek');
+      if (window.AIAdapter && typeof AIAdapter.applyServer === 'function') AIAdapter.applyServer(data);
+      aiLive = live;
+      syncAiBadge();
+    })
+    .catch(() => {});
 }
 
 function setAskBusy(busy) {
@@ -717,6 +732,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 I18N.onChange(() => {
+  syncAiBadge();
   if (!CASE_PACK || !engine) return;
   CASE = I18N.localizeCase(CASE_PACK, I18N.getLang());
   engine.relocalize(CASE);
@@ -728,3 +744,5 @@ I18N.onChange(() => {
     $('actCueName').textContent = stageDisplayName(announcedStage);
   }
 });
+
+refreshAiAvailability();
