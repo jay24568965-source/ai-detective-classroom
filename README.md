@@ -62,7 +62,7 @@ npm test
 嫌疑人提问（预设按钮或自由输入）都走服务端 `POST /api/student/:code/interview`。
 
 - **未设置 `DEEPSEEK_API_KEY`**：使用案件里的 **Mock 预设问答**，可离线演示。界面保持「演示问答（Mock）」/「示範問答（Mock）」/「Demo Q&A (Mock)」。
-- **已设置密钥**：服务端用 [DeepSeek](https://api.deepseek.com) 的 OpenAI 兼容接口 `POST /chat/completions`，让该嫌疑人按人物卡和预设问答作答（简体 / 繁體 / English 跟随 `?lang=` 或 `x-lang`）。成功时响应为 `mode: "live"`，`adapter.provider` 为 `deepseek`，界面改为「真实AI（DeepSeek）」/「真實 AI（DeepSeek）」/「Live AI (DeepSeek)」。
+- **已设置密钥**：服务端用 [DeepSeek](https://api.deepseek.com) 的 OpenAI 兼容接口 `POST /chat/completions`。提示词按课堂当前幕次研读剧本：该人物的人物卡与预设问答，加上本幕及更早幕已解锁证据的学生可见事实（简体 / 繁體 / English 跟随 `?lang=` 或 `x-lang`）。稍后才解锁的测量不会写进更早幕的提示。标准答案、揭晓摘要、教师注释，以及计算结果类证据（终局重建数字）始终不进入提示。成功时响应为 `mode: "live"`，`adapter.provider` 为 `deepseek`，界面改为「真实AI（DeepSeek）」/「真實 AI（DeepSeek）」/「Live AI (DeepSeek)」。
 - **超时、4xx/5xx 或空回复**：这一问退回 Mock，仍返回答案，界面保持 Mock 文案。默认超时约 16 秒。
 - 模型名可选，环境变量 `DEEPSEEK_MODEL`，默认 `deepseek-chat`。
 - 密钥只放在运行环境里。不要写进前端、案件 JSON、git 或 `localStorage`。本地可复制 `.env.example` 为 `.env`（`.env` 已被忽略）。
