@@ -36,38 +36,113 @@
 
   <div id="console" class="teacher-layout" style="display:none;">
     <aside class="teacher-nav">
-      <h2 style="margin-top:0;"><span data-i18n="teacher.room">课堂</span> <span id="roomCode" class="badge"></span></h2>
-      <p class="muted" id="caseTitle"></p>
-      <p><span data-i18n="teacher.voteLabel">投票：</span><span id="voteBadge" class="badge">未开启</span></p>
-      <p><span data-i18n="teacher.revealLabel">揭晓：</span><span id="revealBadge" class="badge">未揭晓</span></p>
-      <hr style="border-color:var(--border);" />
-      <label data-i18n="teacher.stage">调查阶段</label>
-      <div class="row">
-        <button data-stage="1" data-i18n="teacher.act1">第一幕</button>
-        <button data-stage="2" data-i18n="teacher.act2">第二幕</button>
-        <button data-stage="3" data-i18n="teacher.act3">第三幕</button>
+      <div class="tc-side-top">
+        <h2 class="tc-room"><span data-i18n="teacher.room">课堂</span> <span id="roomCode" class="tc-code"></span></h2>
+        <p id="caseTitle" class="tc-case-line"><span id="caseTitleName"></span><span id="caseTitleAct" class="tc-case-act"></span></p>
+        <ul class="tc-status">
+          <li><span class="tc-k" data-i18n="teacher.voteLabel">投票</span> <span id="voteBadge" class="tc-stat">未开启 / 已截止</span></li>
+          <li><span class="tc-k" data-i18n="teacher.revealLabel">揭晓</span> <span id="revealBadge" class="tc-stat">未揭晓</span></li>
+        </ul>
       </div>
-      <label style="margin-top:1rem;" data-i18n="teacher.hintLabel">发布提示</label>
-      <textarea id="hintText" rows="3" data-i18n-placeholder="teacher.hintPh" placeholder="教学提示（不关联投票结果）"></textarea>
-      <button id="btnHint" data-i18n="teacher.sendHint" style="margin-top:0.5rem;width:100%;">发送提示</button>
-      <hr style="border-color:var(--border);" />
-      <button id="btnOpenVote" class="ok" data-i18n="teacher.openVote" style="width:100%;margin-bottom:0.4rem;">开启最终投票</button>
-      <button id="btnCloseVote" class="secondary" data-i18n="teacher.closeVote" style="width:100%;margin-bottom:0.4rem;">关闭投票</button>
-      <button id="btnReveal" class="danger" data-i18n="teacher.reveal" style="width:100%;margin-bottom:0.4rem;">统一揭晓</button>
-      <button id="btnPause" class="secondary" data-i18n="teacher.pause" style="width:100%;margin-bottom:0.4rem;">暂停/继续调查</button>
-      <hr style="border-color:var(--border);" />
-      <button id="btnExportJson" data-i18n="teacher.exportJson" style="width:100%;margin-bottom:0.4rem;">导出 JSON 日志</button>
-      <button id="btnExportCsv" class="secondary" data-i18n="teacher.exportCsv" style="width:100%;">导出 CSV</button>
-      <p class="muted" data-i18n="teacher.tokenNote" style="font-size:0.75rem;margin-top:1rem;">教师令牌已保存在本机。刷新可恢复。</p>
+      <p class="tc-kicker" data-i18n="teacher.system">系统控制</p>
+      <div class="tc-stack">
+        <button type="button" id="btnOpenVote" class="tc-btn tc-go" data-i18n="teacher.openVote">开启系统投票</button>
+        <button type="button" id="btnCloseVote" class="tc-btn tc-stop" data-i18n="teacher.closeVote">关闭投票</button>
+        <button type="button" id="btnReveal" class="tc-btn tc-gold" data-i18n="teacher.reveal">统一揭晓</button>
+        <button type="button" id="btnPause" class="tc-btn tc-darkbtn" data-i18n="teacher.pause">暂存 / 继续调查</button>
+      </div>
+      <p class="tc-help" data-i18n="teacher.systemHelp">控制课堂流程与投票状态</p>
+      <p class="tc-kicker" data-i18n="teacher.export">数据导出</p>
+      <div class="tc-stack">
+        <button type="button" id="btnExportJson" class="tc-btn tc-darkbtn" data-i18n="teacher.exportJson">导出 JSON 日志</button>
+        <button type="button" id="btnExportCsv" class="tc-btn tc-darkbtn" data-i18n="teacher.exportCsv">导出 CSV</button>
+      </div>
+      <p class="tc-foot" data-i18n="teacher.tokenNote">资料保存在此装置 · 刷新可恢复</p>
     </aside>
-    <main class="teacher-main">
-      <h2 data-i18n="teacher.groups">小组状态</h2>
-      <div id="groupsTable"></div>
-      <h2 data-i18n="teacher.hints">最近提示</h2>
-      <ul id="hintsList" class="muted"></ul>
+
+    <header class="teacher-top">
+      <div class="tc-brand" data-i18n="teacher.workbench">课堂工作台</div>
+      <div class="tc-tabs" role="tablist">
+        <button type="button" class="tc-tab is-on" role="tab" id="tabOverview" data-tab="overview" aria-selected="true" aria-controls="viewOverview" data-i18n="teacher.tabOverview">课堂总览</button>
+        <button type="button" class="tc-tab" role="tab" id="tabGroups" data-tab="groups" aria-selected="false" aria-controls="viewGroups" data-i18n="teacher.tabGroups">小组状态</button>
+        <button type="button" class="tc-tab" role="tab" id="tabHints" data-tab="hints" aria-selected="false" aria-controls="viewHints" data-i18n="teacher.tabHints">提示记录</button>
+      </div>
+      <div id="langSlot"></div>
+    </header>
+
+    <div class="teacher-stage">
+      <div class="tc-heading">
+        <div class="tc-heading-text">
+          <h1 data-i18n="teacher.consoleTitle">课堂控制台</h1>
+          <p id="caseName" class="tc-case-name"></p>
+        </div>
+        <div id="statusChip" class="tc-chip"></div>
+      </div>
       <div id="revealBox" style="display:none;" class="flash success"></div>
       <div id="msg" class="flash" style="display:none;"></div>
-    </main>
+
+      <section class="tc-view" id="viewOverview" data-view="overview" role="tabpanel" aria-labelledby="tabOverview">
+        <article class="tc-card">
+          <header class="tc-card-head">
+            <h2 data-i18n="teacher.groups">小组状态</h2>
+            <span class="tc-count-pill" data-group-count></span>
+          </header>
+          <div id="groupsTable" class="tc-table-wrap"></div>
+        </article>
+        <div class="tc-split">
+          <article class="tc-card tc-dark">
+            <header class="tc-card-head tc-card-head-dark">
+              <h2 data-i18n="teacher.hintLabel">发布提示</h2>
+            </header>
+            <p class="tc-hint-sub" data-i18n="teacher.hintIndep">教学提示 · 与投票结果无关</p>
+            <div class="tc-field">
+              <textarea id="hintText" maxlength="500" rows="5" data-i18n-placeholder="teacher.hintPh" placeholder="在此输入要发布给所有小组的提示…"></textarea>
+              <span id="hintCount" class="tc-counter">0/500</span>
+            </div>
+            <div class="tc-send-row">
+              <span class="tc-send-note" data-i18n="teacher.hintSync">送出后同步显示于右侧</span>
+              <button type="button" id="btnHint" class="tc-btn tc-gold tc-send" data-i18n="teacher.sendHint">发送提示</button>
+            </div>
+            <div class="tc-stage-row">
+              <span class="tc-stage-label" data-i18n="teacher.stage">调查阶段</span>
+              <div class="tc-seg" role="group">
+                <button type="button" data-stage="1" class="is-on" data-i18n="teacher.act1">第一幕</button>
+                <button type="button" data-stage="2" data-i18n="teacher.act2">第二幕</button>
+                <button type="button" data-stage="3" data-i18n="teacher.act3">第三幕</button>
+              </div>
+            </div>
+          </article>
+          <article class="tc-card tc-recent">
+            <header class="tc-card-head">
+              <h2 data-i18n="teacher.hints">最近提示</h2>
+              <span class="tc-count-pill" data-i18n="teacher.hintBadge">教学提示</span>
+            </header>
+            <div id="hintsRecent" class="tc-recent-body"></div>
+            <p class="tc-hint-foot" data-i18n="teacher.hintFoot">教学提示独立发布，与投票结果无关。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="tc-view" id="viewGroups" data-view="groups" role="tabpanel" aria-labelledby="tabGroups" hidden>
+        <article class="tc-card">
+          <header class="tc-card-head">
+            <h2 data-i18n="teacher.groups">小组状态</h2>
+            <span class="tc-count-pill" data-group-count></span>
+          </header>
+          <div id="groupsTableFull" class="tc-table-wrap"></div>
+        </article>
+      </section>
+
+      <section class="tc-view" id="viewHints" data-view="hints" role="tabpanel" aria-labelledby="tabHints" hidden>
+        <article class="tc-card">
+          <header class="tc-card-head">
+            <h2 data-i18n="teacher.tabHints">提示记录</h2>
+            <span class="tc-count-pill" data-i18n="teacher.hintBadge">教学提示</span>
+          </header>
+          <div id="hintsList" class="tc-log"></div>
+        </article>
+      </section>
+    </div>
   </div>
 
   <script src="/js/case-locale.js"></script>
